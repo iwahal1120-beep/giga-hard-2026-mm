@@ -11,11 +11,12 @@
         #start-screen { position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:99999; display:flex; flex-direction:column; align-items:center; overflow-y: auto; padding-bottom: 50px; }
         .prize-header { background: linear-gradient(90deg, #ffd700, #fff, #ffd700); color: #000; font-weight: bold; padding: 12px; font-size: 14px; width: 100%; }
         .btn-ofuse { background: #ed6c00; color: white; padding: 18px; border-radius: 12px; text-decoration: none; font-size: 16px; font-weight: bold; display: block; margin: 20px auto; width: 90%; max-width: 340px; border: 2px solid #fff; }
-        
-        /* 入力枠の拡大（スマホ最適化） */
         input { padding: 15px; font-size: 18px; width: 90%; max-width: 340px; margin-bottom: 12px; border-radius: 10px; border: 2px solid #ccc; color: #000; height: 50px; }
         
+        /* 規約エリア：重要なメッセージをすべて含めた版 */
         .terms-box { font-size: 11px; color: #ccc; text-align: left; width: 90%; max-width: 400px; line-height: 1.6; border: 1px solid #444; padding: 15px; margin-top: 10px; background: rgba(255,255,255,0.05); }
+        .red-msg { color: #ff6b6b; font-weight: bold; }
+
         .ranking-container { width: 90%; max-width: 400px; margin-top: 20px; border: 1px solid #ffd700; padding: 10px; border-radius: 8px; background: #111; }
         .rank-title { color: #ffd700; font-size: 16px; margin-bottom: 10px; border-bottom: 1px solid #ffd700; padding-bottom: 5px; }
         .rank-row { display:flex; justify-content:space-between; font-size:12px; margin:4px 0; border-bottom:1px solid #222; font-family: monospace; }
@@ -47,10 +48,13 @@
         <button onclick="startGame()" class="btn-start">GAME START</button>
         
         <div class="terms-box">
-            <p><strong>【規約 / Terms】</strong></p>
-            <p>・最終期限：2026.12.31 0:00 までに全クリア。</p>
-            <p>・募金の一部はユニセフ、国境なき医師団などへ寄付予定。</p>
-            <p>・不正行為はAIが検知し削除。バグの際は再挑戦を！</p>
+            <p><strong>【重要規約 / Terms】</strong></p>
+            <p class="red-msg">・最終期限：2026.12.31 0:00</p>
+            <p class="red-msg">・このゲームは不規則にステージが増えていきます。最終時点で公開されている全ステージをクリアすることが賞金対象の条件となります。</p>
+            <p>・New stages will be added irregularly. To win, you must clear ALL stages available by the deadline: 2026.12.31 0:00.</p>
+            <p>・募金の一部はユニセフ、国境なき医師団などへ寄付する予定です。</p>
+            <p>・不正行為（プログラム改ざん等）はAIが検知し削除します。</p>
+            <p>・バグが発生する可能性は否定できません、その際は再チャレンジを！</p>
         </div>
 
         <div class="ranking-container">
@@ -74,7 +78,7 @@ const stages = [
     {n:2, t:"Cat", c:["🐶","🐥"], g:"🐱", num:800},
     {n:3, t:"Bicycle", c:["🚗","🚕"], g:"🚲", num:800},
     {n:4, t:"Cookie", c:["🍬","🍭"], g:"🍪", num:800, sz:14},
-    {n:5, t:"5 Gray Dots", type:"gray", goals:5, num:900}, // ステージ5を可視化修正
+    {n:5, t:"5 Gray Dots", type:"gray", goals:5, num:900},
     {n:6, t:"Clown", c:["💃","🕺"], g:"🤡", num:700, sz:8}, 
     {n:7, t:"5 Flags", c:["🌏"], g:["🇯🇵","🇺🇸","🇫🇷","🇩🇪","🇰🇷"], num:600, goals:5},
     {n:8, t:"Bone", c:["🐟","🐠"], g:"🦴", num:1000}, 
@@ -136,7 +140,6 @@ function init() {
         } else if(s.type === "fate") {
             renderFate(f); return;
         } else if(s.type === "gray") {
-            // ステージ5を視認可能な「濃いグレー・縁あり」に変更
             t.style.width="14px"; t.style.height="14px"; t.style.background="#666"; 
             t.style.border="1px solid #000"; t.style.borderRadius="50%";
         } else {
@@ -191,19 +194,13 @@ function next() {
     setTimeout(() => { if(cur < stages.length) init(); else alert("ALL CLEAR!"); }, 600);
 }
 
-// タイマー停止ロジックを修正
 setInterval(() => {
     if(!active) return;
     ms--;
     const tElem = document.getElementById('timer');
     if(ms <= 1000) tElem.className = "timer-danger"; else tElem.className = "";
-
     if(ms <= 0) {
-        active = false;
-        tElem.innerText = "0.00";
-        alert("TIME UP!");
-        location.reload();
-        return;
+        active = false; tElem.innerText = "0.00"; alert("TIME UP!"); location.reload(); return;
     }
     tElem.innerText = (ms/100).toFixed(2);
 }, 10);
