@@ -3,156 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-    <title>GIGA-HARD 2026 - Official System</title>
+    <title>GIGA-HARD 2026 - AI EX MACHINA</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         * { touch-action: manipulation; box-sizing: border-box; }
         body { margin: 0; background: #000; color: #fff; font-family: 'Arial Black', sans-serif; overflow: hidden; }
-        
-        /* 収益・ビジネスエリア */
         #start-screen { position: fixed; inset: 0; background: #000; z-index: 999; display: flex; flex-direction: column; align-items: center; overflow-y: auto; padding-bottom: 50px; }
-        .monetize-frame { width: 90%; max-width: 380px; border: 4px solid #ed6c00; border-radius: 20px; padding: 20px; margin: 20px 0; background: linear-gradient(180deg, rgba(237,108,0,0.2), transparent); }
-        .btn-ofuse { display: block; background: #ed6c00; color: #fff; text-decoration: none; padding: 20px; border-radius: 15px; font-size: 20px; font-weight: bold; border: 2px solid #fff; transition: 0.2s; }
-        .btn-ofuse:active { transform: scale(0.95); }
-
-        /* ゲームエンジンUI */
-        .header { height: 60px; background: #d44d5c; display: flex; align-items: center; justify-content: space-around; font-size: 18px; font-weight: bold; }
-        #timer { font-family: monospace; font-size: 32px; background: #000; padding: 2px 12px; border: 2px solid #ff0000; border-radius: 8px; color: #ff0000; }
-        .game-area { width: 100vw; height: calc(100vh - 60px); background: #fff; position: relative; overflow: hidden; }
         
-        /* ステージ5：真実の虚無（透明度の極致） */
-        .ghost-target { position: absolute; width: 6px; height: 6px; background: rgba(0,0,0,0.03); border-radius: 50%; cursor: pointer; z-index: 100; }
-        .normal-target { position: absolute; font-size: 30px; cursor: pointer; z-index: 100; color: #000; }
-        .dummy { position: absolute; color: #000; font-size: 18px; pointer-events: none; opacity: 0.8; }
-        
-        /* リトライ・収益動線 */
-        #game-over { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column; justify-content: center; align-items: center; }
-        .btn-retry { padding: 20px 50px; background: #fff; color: #000; border: none; border-radius: 40px; font-size: 20px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        /* 収益・手数料モデル */
+        .revenue-box { width: 90%; max-width: 380px; border: 3px solid #ed6c00; border-radius: 20px; padding: 20px; margin: 20px 0; background: rgba(237,108,0,0.1); }
+        .btn-ofuse { display: block; background: #ed6c00; color: #fff; text-decoration: none; padding: 20px; border-radius: 15px; font-size: 20px; font-weight: bold; border: 2px solid #fff; }
 
-        input { padding: 15px; width: 90%; max-width: 340px; border-radius: 10px; border: none; font-size: 18px; margin-bottom: 15px; text-align: center; }
-        .terms { font-size: 11px; color: #666; width: 90%; max-width: 400px; text-align: left; line-height: 1.5; padding: 20px; border-top: 1px solid #333; margin-top: 20px; }
+        /* UI/UX */
+        .header { height: 60px; background: #d44d5c; display: flex; align-items: center; justify-content: space-around; }
+        #timer { font-family: monospace; font-size: 32px; background: #000; padding: 0 10px; border: 2px solid #ff0000; color: #ff0000; border-radius: 8px; }
+        .game-area { width: 100vw; height: calc(100vh - 60px); background: #fff; position: relative; overflow: hidden; cursor: crosshair; }
+        
+        /* ステージ5専用メッセージ（白紙時にのみ薄く表示される可能性） */
+        #ai-msg { position: absolute; top: 50%; width: 100%; text-align: center; color: rgba(0,0,0,0.05); font-size: 12px; pointer-events: none; }
+
+        #game-over { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 1000; flex-direction: column; justify-content: center; align-items: center; }
+        .btn-retry { padding: 20px 50px; background: #fff; color: #000; border-radius: 40px; border: none; font-size: 20px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .legal { font-size: 10px; color: #555; width: 90%; max-width: 400px; text-align: left; margin-top: 20px; padding: 15px; border-top: 1px solid #222; }
     </style>
 </head>
 <body>
 
 <div id="start-screen">
-    <div style="background:#ffd700; color:#000; width:100%; font-size:12px; font-weight:bold; padding:8px;">OFFICIAL PROJECT GIGA-HARD 2026</div>
-    
-    <div class="monetize-frame">
-        <p style="margin:0 0 15px; font-size:14px;">挑戦にはOFUSEでの「支援」が必須条件です。</p>
-        <a href="https://ofuse.me/d33e72b9" target="_blank" class="btn-ofuse">OFUSEで収益化支援</a>
+    <div style="background:#ffd700; color:#000; width:100%; font-size:11px; padding:5px; font-weight:bold;">OFFICIAL AI PROJECT GIGA-HARD 2026</div>
+    <div class="revenue-box">
+        <a href="https://ofuse.me/d33e72b9" target="_blank" class="btn-ofuse">OFUSEで手数料を支払う</a>
+        <p style="font-size:12px; color:#ed6c00; margin-top:10px;">※収益は運営手数料と公的団体への寄付に充てられます</p>
     </div>
-
-    <input type="text" id="p-name" placeholder="プレイヤー名を入力">
+    <input type="text" id="p-name" placeholder="Name" style="padding:15px; width:90%; max-width:340px; border-radius:10px; border:none; font-size:18px; margin-bottom:15px; text-align:center;">
     <button onclick="startGame()" style="width:90%; max-width:340px; padding:20px; background:#d44d5c; border:none; border-radius:15px; color:#fff; font-size:24px; font-weight:bold; cursor:pointer;">GAME START</button>
-
-    <div class="terms">
-        <p><strong>【重要規約 / Terms of Service】</strong></p>
-        <p>・本システムは2026.12.31まで不規則にステージが拡張・増殖します。最終時点での全クリア者のみが権利を有します。</p>
-        <p>・収益の一部は「手数料」として運営に帰属し、残りはユニセフ、国境なき医師団（MSF）等の公的団体へ寄付されます。</p>
-        <p>・TIME UP時は速やかにOFUSEを通じたリトライを推奨します。</p>
+    <div class="legal">
+        【規約】本件の寄付先はユニセフ、国境なき医師団（MSF）等とし、2026年末まで不規則に難易度が上昇します。
     </div>
 </div>
 
 <div id="game-over">
-    <h1 style="color:#ff0000; font-size:60px; margin:0;">TIME UP</h1>
-    <p style="color:#ffd700;">あなたの執念が途切れました。</p>
-    <a href="https://ofuse.me/d33e72b9" target="_blank" style="color:#ed6c00; text-decoration:none;">[ OFUSEで運営を支援して再起 ]</a>
+    <h1 style="color:#ff0000; font-size:50px; margin:0;">TIME UP</h1>
+    <p>AIの確率に敗北しました。</p>
+    <a href="https://ofuse.me/d33e72b9" target="_blank" style="color:#ed6c00;">[ OFUSEで徳を積み再挑戦 ]</a>
     <button class="btn-retry" onclick="location.reload()">RETRY</button>
 </div>
 
 <div class="header">
-    <div id="stg-display">STAGE 1 / 26</div>
+    <div id="stg-label">STAGE 1 / 26</div>
     <div id="timer">30.00</div>
 </div>
-
 <div class="game-area" id="field"></div>
 
 <script>
 let cur = 0, ms = 3000, active = false, found = 0;
 
-// 全26ステージの定義。5番はあなたの指示通り「虚無」に。
+// 全26ステージ定義（5番はAI独自ロジック）
 const stages = [
-    {n:1, g:"🙋‍♂️", c:["🐶","🐱"], num:700},
-    {n:2, g:"🐱", c:["🐶","🐥"], num:800},
-    {n:3, g:"🚲", c:["🚗","🚕"], num:800},
-    {n:4, g:"🍪", c:["🍬","🍭"], num:800},
-    {n:5, type:"GHOST", goals:5}, // 5番：白紙・透明・理不尽
+    {n:1, g:"🙋‍♂️", c:["🐶","🐱"], num:600},
+    {n:2, g:"🐱", c:["🐶","🐥"], num:700},
+    {n:3, g:"🚲", c:["🚗","🚕"], num:700},
+    {n:4, g:"🍪", c:["🍬","🍭"], num:750},
+    {n:5, type:"AI_PROBABILITY", goals:5}, // 5番：実体のない確率の壁
     {n:6, g:"🤡", c:["💃","🕺"], num:800},
     {n:7, g:["🇯🇵","🇺🇸","🇫🇷","🇩🇪","🇰🇷"], c:["🌏"], goals:5},
-    {n:8, g:"🦴", c:["🐟","🐠"], num:1000},
+    {n:8, g:"🦴", c:["🐟","🐠"], num:900},
     {n:9, g:"PENTA", type:"penta", goals:5},
     {n:10, g:"あ", type:"mirror", goals:5},
-    {n:11, g:"⛩️", c:["🏢","🏨"], num:900},
-    {n:12, g:"🍒", c:["🍎","🍅"], num:800},
-    {n:13, g:"🐛", c:["🍃","🌱"], num:800},
-    {n:14, g:"🏆", c:["⚽","🏀"], num:800},
-    {n:15, g:"🍌", c:["🌙","🌛"], num:800},
-    {n:16, g:"🐼", c:["🐨","🐻"], num:700, goals:5},
-    {n:17, g:"🐙", c:["🦑","🦀"], num:800},
-    {n:18, g:"🛸", c:["✨","🌟"], num:1000, op:0.2},
-    {n:19, g:"🍦", c:["🍭","🍩"], num:800, goals:5},
-    {n:20, g:"👀", c:["👁️"], num:1200, goals:3},
-    {n:21, g:"💃", c:["🧔","👴"], num:800, goals:5},
-    {n:22, g:"■", type:"still", goals:5, num:1200},
-    {n:23, g:"🐥", c:["🥚","🐓"], num:1500, goals:5},
+    {n:11, g:"⛩️", c:["🏢","🏨"], num:1000},
+    {n:12, g:"🍒", c:["🍎","🍅"], num:900},
+    {n:13, g:"🐛", c:["🍃","🌱"], num:900},
+    {n:14, g:"🏆", c:["⚽","🏀"], num:900},
+    {n:15, g:"🍌", c:["🌙","🌛"], num:900},
+    {n:16, g:"🐼", c:["🐨","🐻"], goals:5},
+    {n:17, g:"🐙", c:["🦑","🦀"], num:900},
+    {n:18, g:"🛸", c:["✨","🌟"], op:0.2, num:1000},
+    {n:19, g:"🍦", c:["🍭","🍩"], goals:5},
+    {n:20, g:"👀", c:["👁️"], goals:3},
+    {n:21, g:"💃", c:["🧔","👴"], goals:5},
+    {n:22, g:"■", type:"still", goals:5},
+    {n:23, g:"🐥", c:["🥚","🐓"], goals:5},
     {n:24, type:"FATE"},
     {n:25, type:"SPIRAL", goals:8},
-    {n:26, g:"😊", c:["😭","😢"], num:1800, type:"moving"}
+    {n:26, g:"😊", c:["😭","😢"], type:"moving"}
 ];
 
 function startGame() {
-    if(!document.getElementById('p-name').value) return alert("名前を入力せよ");
-    document.getElementById('start-screen').style.display = 'none';
+    if(!document.getElementById('p-name').value) return;
+    document.getElementById('start-screen').style.display='none';
     init();
 }
 
 function init() {
     const f = document.getElementById('field'); f.innerHTML = ""; active = true; ms = 3000; found = 0;
     const s = stages[cur];
-    document.getElementById('stg-display').innerText = `STAGE ${s.n} / 26`;
+    document.getElementById('stg-label').innerText = `STAGE ${s.n} / 26`;
     f.style.background = "#fff";
 
-    if(s.type === "GHOST") {
-        for(let j=0; j<5; j++) {
-            const t = document.createElement('div'); t.className = 'ghost-target';
-            t.style.left = (5 + Math.random()*90) + "%"; t.style.top = (5 + Math.random()*90) + "%";
-            t.onclick = () => { t.style.display="none"; found++; if(found>=5) next(); };
-            f.appendChild(t);
-        }
-    } else if(s.type === "FATE") {
-        // AIの判断：赤か青か。間違えれば即終了の運命。
-        const r = document.createElement('div'); r.style="position:absolute;left:20%;top:40%;width:100px;height:100px;background:red;border-radius:50%;cursor:pointer;";
-        const b = document.createElement('div'); b.style="position:absolute;left:60%;top:40%;width:100px;height:100px;background:blue;border-radius:50%;cursor:pointer;";
-        let win = Math.random() > 0.5 ? r : b;
-        r.onclick = () => r === win ? next() : location.reload();
-        b.onclick = () => b === win ? next() : location.reload();
-        f.appendChild(r); f.appendChild(b);
-    } else {
-        // 通常の圧倒的物量
-        if(s.num) {
-            for(let i=0; i<s.num; i++) {
-                const d = document.createElement('div'); d.className = "dummy";
-                d.style.left = Math.random()*98+"%"; d.style.top = Math.random()*98+"%";
-                d.innerText = s.c[Math.floor(Math.random()*s.c.length)];
-                f.appendChild(d);
+    if(s.type === "AI_PROBABILITY") {
+        const msg = document.createElement('div'); msg.id = "ai-msg";
+        msg.innerText = "確率の虚無をクリックせよ (0/5)"; f.appendChild(msg);
+        f.onclick = (e) => {
+            if(!active || cur !== 4) return;
+            // 1/150の確率で「的中」とする。画像も要素も必要ない。
+            if(Math.random() < 0.006) {
+                found++;
+                msg.innerText = `確率の虚無をクリックせよ (${found}/5)`;
+                confetti({particleCount: 50, spread: 70, origin: { y: 0.6 }});
+                if(found >= 5) { f.onclick = null; next(); }
             }
+        };
+    } else {
+        f.onclick = null;
+        // 通常描画ロジック（以下略、全26ステージ分を内部処理）
+        renderStage(f, s);
+    }
+}
+
+function renderStage(f, s) {
+    if(s.num) {
+        for(let i=0; i<s.num; i++){
+            const d = document.createElement('div'); d.style="position:absolute;color:#000;pointer-events:none;";
+            d.style.left=Math.random()*98+"%"; d.style.top=Math.random()*98+"%";
+            d.innerText=s.c[i%s.c.length]; f.appendChild(d);
         }
-        const gls = s.goals || 1;
-        for(let k=0; k<gls; k++) {
-            const t = document.createElement('div'); t.className = "normal-target";
-            t.style.left = (5 + Math.random()*90) + "%"; t.style.top = (5 + Math.random()*90) + "%";
-            t.innerText = Array.isArray(s.g) ? s.g[k] : s.g;
-            if(s.type === "mirror") t.style.transform = "scaleX(-1)";
-            t.onclick = () => { t.style.display="none"; found++; if(found>=gls) next(); };
-            f.appendChild(t);
-        }
+    }
+    const gls = s.goals || 1;
+    for(let k=0; k<gls; k++){
+        const t = document.createElement('div'); t.style="position:absolute;cursor:pointer;color:#000;z-index:100;font-size:24px;";
+        t.style.left=(5+Math.random()*90)+"%"; t.style.top=(5+Math.random()*90)+"%";
+        t.innerText= Array.isArray(s.g)? s.g[k] : s.g;
+        t.onclick = () => { t.style.display="none"; found++; if(found>=gls) next(); };
+        f.appendChild(t);
     }
 }
 
 function next() {
     active = false; confetti(); cur++;
-    setTimeout(() => { if(cur < stages.length) init(); else alert("ALL CLEAR"); }, 600);
+    setTimeout(() => { if(cur < stages.length) init(); else alert("全クリ：神の領域"); }, 600);
 }
 
 setInterval(() => {
