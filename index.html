@@ -11,11 +11,24 @@
     <style>
         body { background: #000; color: #fff; font-family: sans-serif; overflow: hidden; user-select: none; margin: 0; }
         #game-area { height: calc(100vh - 120px); position: relative; background: #d1d5db; overflow: hidden; }
-        .emoji { position: absolute; cursor: pointer; font-size: 1.5rem; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
-        .target { z-index: 10000; } .noise { z-index: 100; }
-        .yellow-coin { color: #facc15; }
+        
+        .emoji { 
+            position: absolute; cursor: pointer; font-size: 1.5rem; 
+            width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; 
+        }
+        .target { z-index: 10000; } 
+        .noise { z-index: 100; }
+
+        /* 銀貨ステージのノイズ（🪙）専用：強制的にイエロー化 */
+        .yellow-noise { 
+            color: #facc15 !important; 
+            filter: drop-shadow(0 0 1px #854d0e);
+            -webkit-text-fill-color: #facc15; /* 一部のブラウザで絵文字の色を上書き */
+        }
+
         @keyframes moveAround { 0% { transform: translate(0, 0); } 100% { transform: translate(2px, 2px); } }
         .moving-square { animation: moveAround 0.2s infinite alternate ease-in-out; color: #4b5563; }
+        
         .danger-pulse #game-area { animation: pulse 0.4s infinite alternate; }
         @keyframes pulse { from { background: #d1d5db; } to { background: #f87171; } }
         
@@ -37,23 +50,21 @@
                 <p class="text-zinc-500 italic">・Stages may increase without notice. You must complete ALL stages to clear.</p>
             </div>
             <div>
-                <p>・2026年12月31日 0:00時点の順位でJCBギフト券を贈呈。AI監視による不正は失格。本人確認にOFUSEパスワード必須。</p>
-                <p class="text-zinc-500 italic">・Prizes awarded based on ranking on Dec 31, 2026. AI anti-cheat active. OFUSE PW required for verification.</p>
+                <p>・2026年12月31日 0:00時点の順位でJCBギフト券を贈呈。本人確認にOFUSEパスワード必須。</p>
+                <p class="text-zinc-500 italic">・Prizes: Dec 31, 2026. OFUSE PW required.</p>
             </div>
             <a href="https://ofuse.me/d33e72b9" target="_blank" class="block bg-orange-600 text-white text-center py-2 rounded font-bold text-[11px] mt-2 active:bg-orange-500">OFUSE PASS / 応援</a>
         </div>
 
-        <input type="text" id="name" placeholder="Name / 名前" class="w-full p-4 rounded-xl bg-zinc-800 mb-2 text-white border border-zinc-600 outline-none focus:border-yellow-500">
-        <input type="text" id="pw" placeholder="OFUSE Password / パスワード" class="w-full p-4 rounded-xl bg-zinc-800 mb-6 text-white border border-zinc-600 outline-none focus:border-yellow-500">
+        <input type="text" id="name" placeholder="Name / 名前" class="w-full p-4 rounded-xl bg-zinc-800 mb-2 text-white border border-zinc-600 outline-none">
+        <input type="text" id="pw" placeholder="OFUSE Password / パスワード" class="w-full p-4 rounded-xl bg-zinc-800 mb-6 text-white border border-zinc-600 outline-none">
         
         <button onclick="start()" class="w-full bg-red-700 py-5 rounded-2xl font-black text-2xl shadow-xl active:scale-95 mb-8">CHALLENGE START</button>
 
         <div class="ranking-list">
             <h2 class="text-center text-xs font-bold text-yellow-500 mb-3 tracking-widest uppercase italic">LIVE WORLD RANKING</h2>
-            <div id="ranking-container" class="text-zinc-500 text-center py-2 text-[10px]">Connecting to server...</div>
+            <div id="ranking-container" class="text-zinc-500 text-center py-2 text-[10px]">Connecting...</div>
         </div>
-
-        <div class="h-10"></div>
     </div>
 </div>
 
@@ -68,59 +79,17 @@
 <main id="game-area"></main>
 
 <script>
-    // --- FIREBASE SETTINGS ---
-    const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT.firebaseapp.com",
-        databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-        projectId: "YOUR_PROJECT",
-        storageBucket: "YOUR_PROJECT.appspot.com",
-        messagingSenderId: "YOUR_ID",
-        appId: "YOUR_APP_ID"
-    };
-    
-    // Safety check for Firebase
+    // --- FIREBASE 設定 (省略せず設定してください) ---
+    const firebaseConfig = { apiKey: "YOUR_API_KEY", authDomain: "...", databaseURL: "...", projectId: "...", storageBucket: "...", messagingSenderId: "...", appId: "..." };
     let db = null;
-    if(firebaseConfig.apiKey !== "YOUR_API_KEY") {
-        firebase.initializeApp(firebaseConfig);
-        db = firebase.database();
-    }
-
-    function fetchRanking() {
-        if(!db) { document.getElementById('ranking-container').innerText = "Ranking Offline (Firebase not set)"; return; }
-        db.ref('rankings').orderByChild('score').limitToLast(10).on('value', (snapshot) => {
-            const data = [];
-            snapshot.forEach((child) => { data.push(child.val()); });
-            data.reverse();
-            renderRanking(data);
-        });
-    }
-
-    function saveScore(finalScore) {
-        if(!db) return;
-        db.ref('rankings').push({ name: pName, score: finalScore, timestamp: Date.now() });
-    }
-
-    function renderRanking(list) {
-        const container = document.getElementById('ranking-container');
-        if (list.length === 0) { container.innerHTML = "No records."; return; }
-        container.innerHTML = list.map((item, index) => `
-            <div class="ranking-item">
-                <div class="flex">
-                    <span class="rank-num">${index + 1}</span>
-                    <span class="text-zinc-200 truncate max-w-[120px]">${item.name}</span>
-                </div>
-                <span class="font-mono text-yellow-400">${item.score.toLocaleString()}</span>
-            </div>
-        `).join('');
-    }
+    if(firebaseConfig.apiKey !== "YOUR_API_KEY") { firebase.initializeApp(firebaseConfig); db = firebase.database(); }
 
     const STAGES = [
         {m:"人間を探せ (Find Human)", t:["🙋‍♂️"], n:["🐶","🐱","🐭"], c:600},
         {m:"猫を探せ (Find Cat)", t:["🐱"], n:["🧔","👵","👦"], c:600},
         {m:"自転車を探せ (Find Bicycle)", t:["🚲"], n:["🚗","🚌","🚙"], c:500},
         {m:"クッキーを探せ (Find Cookie)", t:["🍪"], n:["🍬","🍭","🍩"], c:600},
-        {m:"銀貨を探せ (Find Silver Coin)", t:["🥈"], n:["🪙"], c:700, s:"s"},
+        {m:"銀貨を探せ (Find Silver Coin)", t:["🥈"], n:["🪙"], c:700, s:"s"}, // 🪙をイエローに
         {m:"ピエロを探せ (Find Clown)", t:["🤡"], n:["💃","👱‍♀️"], c:600},
         {m:"国旗を探せ (Find Flag)", t:["🇯🇵","🇺🇸","🇫🇷","🇮🇹","🇰🇷"], n:["🌍","🌎"], c:600},
         {m:"骨を探せ (Find Bone)", t:["🦴"], n:["🐟","🐠"], c:650},
@@ -146,11 +115,9 @@
     let stg=0, time=3000, tid=null, found=0, score=0, pName, pPass, live=false;
     const area=document.getElementById('game-area'), timerEl=document.getElementById('timer'), stgEl=document.getElementById('stg'), txtEl=document.getElementById('target-text');
 
-    window.onload = fetchRanking;
-
     function start() {
         pName=document.getElementById('name').value; pPass=document.getElementById('pw').value;
-        if(!pName || !pPass) return alert("Required / 入力必須");
+        if(!pName || !pPass) return alert("Enter Name & PW");
         document.getElementById('start-screen').style.display='none';
         stg=0; score=0; live=true; loadStage(); 
         if(!tid) tid=setInterval(tick, 10);
@@ -160,8 +127,6 @@
         if(!live) return;
         time--;
         timerEl.innerText = (time/100).toFixed(2);
-        if(time <= 1000) document.body.classList.add('danger-pulse');
-        else document.body.classList.remove('danger-pulse');
         if(time <= 0) endGame(false);
     }
 
@@ -185,11 +150,20 @@
             }
         } else {
             for(let i=0;i<s.c;i++) {
-                const n=document.createElement('div'); n.className="emoji noise"; n.innerText=s.n[i%s.n.length];
-                n.style.left=Math.random()*92+"%"; n.style.top=Math.random()*92+"%";
-                if(s.s==='s') n.classList.add('yellow-coin'); 
-                if(s.s==='sq') { n.classList.add('moving-square'); n.style.fontSize="0.8rem"; }
-                n.onclick=()=>{ time=Math.max(0,time-300); }; area.append(n);
+                const n = document.createElement('div');
+                n.className = "emoji noise";
+                n.innerText = s.n[i % s.n.length];
+                n.style.left = Math.random() * 92 + "%";
+                n.style.top = Math.random() * 92 + "%";
+                
+                // ★修正：銀貨ステージ(s==='s')かつ、ノイズが🪙の場合のみイエローを適用
+                if(s.s === 's' && n.innerText === "🪙") {
+                    n.classList.add('yellow-noise');
+                }
+                
+                if(s.s === 'sq') n.classList.add('moving-square');
+                n.onclick = () => { time = Math.max(0, time - 300); };
+                area.appendChild(n);
             }
             s.t.forEach(t=>{
                 const g=document.createElement('div'); g.className="emoji target"; g.innerText=t;
@@ -197,30 +171,22 @@
                 if(s.s==='mi') g.style.transform="scaleX(-1)";
                 if(s.s==='uf') g.style.opacity="0.1";
                 g.onclick=(e)=>{ e.stopPropagation(); g.style.visibility='hidden'; found++; if(found>=s.t.length) nextStage(); };
-                area.append(g);
+                area.appendChild(g);
             });
         }
     }
 
-    function nextStage() {
-        score += time; confetti(); stg++;
-        if(stg >= STAGES.length) endGame(true); else loadStage();
-    }
-
+    function nextStage() { score += time; confetti(); stg++; if(stg >= STAGES.length) endGame(true); else loadStage(); }
     function endGame(win) {
         live=false;
-        if(win) saveScore(score);
+        if(win && db) db.ref('rankings').push({ name: pName, score: score, timestamp: Date.now() });
         const o=document.createElement('div'); o.className="fixed inset-0 bg-black/95 z-[60000] flex flex-col items-center justify-center p-8 text-center";
-        o.innerHTML=win?`
-            <h1 class="text-5xl text-yellow-400 font-black mb-4 italic uppercase">Clear!</h1>
-            <p class="text-lg">Final Score: ${score}</p>
-            <button onclick="location.reload()" class="mt-10 bg-white text-black px-16 py-4 rounded-full font-black">TITLE</button>
-        `:`
-            <h1 class="text-7xl text-red-600 font-black mb-8 italic uppercase">Game Over</h1>
-            <button onclick="location.reload()" class="bg-red-600 text-white px-16 py-5 rounded-full font-black">RETRY</button>
-        `;
-        document.body.append(o);
+        o.innerHTML=win?`<h1 class='text-5xl text-yellow-400 font-black mb-4 italic'>CLEAR!</h1><p class='text-lg'>Score: ${score}</p><button onclick='location.reload()' class='mt-10 bg-white text-black px-16 py-4 rounded-full font-black'>TITLE</button>`:`<h1 class='text-7xl text-red-600 font-black mb-8 italic'>TIME UP</h1><button onclick='location.reload()' class='bg-red-600 text-white px-16 py-5 rounded-full font-black'>RETRY</button>`;
+        document.body.appendChild(o);
     }
+    function fetchRanking() { if(!db) return; db.ref('rankings').orderByChild('score').limitToLast(10).on('value', (snap) => { const data = []; snap.forEach((c) => { data.push(c.val()); }); data.reverse(); renderRanking(data); }); }
+    function renderRanking(list) { const container = document.getElementById('ranking-container'); container.innerHTML = list.map((item, index) => `<div class='ranking-item'><div class='flex'><span class='rank-num'>${index + 1}</span><span class='text-zinc-200 truncate max-w-[120px]'>${item.name}</span></div><span class='font-mono text-yellow-400'>${item.score.toLocaleString()}</span></div>`).join('') || "No records."; }
+    window.onload = fetchRanking;
 </script>
 </body>
 </html>
