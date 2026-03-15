@@ -19,7 +19,6 @@
         .danger-pulse #game-area { animation: pulse 0.4s infinite alternate; }
         @keyframes pulse { from { background: #d1d5db; } to { background: #f87171; } }
         
-        /* スタート画面のレイアウト調整 */
         .ranking-list { background: rgba(30, 30, 30, 0.9); border-radius: 1rem; padding: 1rem; width: 100%; border: 1px solid #444; margin-bottom: 2rem; }
         .ranking-item { display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding: 6px 0; font-size: 0.8rem; }
         .rank-num { font-weight: bold; color: #fbce03; width: 30px; }
@@ -31,24 +30,31 @@
     <div class="max-w-md w-full flex flex-col items-center">
         <h1 class="text-4xl font-black text-yellow-400 text-center mb-6 italic tracking-tighter">GIGA-HARD</h1>
         
-        <div class="bg-zinc-900 p-4 rounded-xl text-[10px] space-y-2 mb-6 border border-zinc-700 text-zinc-300 leading-tight">
-            <p class="text-white font-bold">【規約 / Terms】</p>
-            <p>・収益の一部はユニセフ等へ寄付予定。2026年12月31日 0:00時点の順位でJCBギフト券を贈呈。</p>
-            <p>・AI監視による不正検知時は失格。本人確認にOFUSEパスワードが必要。</p>
-            <a href="https://ofuse.me/d33e72b9" target="_blank" class="block bg-orange-600 text-white text-center py-2 rounded font-bold text-[11px] mt-2 active:bg-orange-500">OFUSEで応援＆パスワード取得</a>
+        <div class="bg-zinc-900 p-4 rounded-xl text-[10px] space-y-3 mb-6 border border-zinc-700 text-zinc-300 leading-tight">
+            <div>
+                <p class="text-white font-bold mb-1">【規約 / Terms】</p>
+                <p>・予告なくゲームは増えていきます。クリアにはその全てを完了する必要があります。</p>
+                <p class="text-zinc-500 italic">・Stages may increase without notice. You must complete ALL stages to clear.</p>
+            </div>
+            <div>
+                <p>・2026年12月31日 0:00時点の順位でJCBギフト券を贈呈。AI監視による不正は失格。本人確認にOFUSEパスワード必須。</p>
+                <p class="text-zinc-500 italic">・Prizes awarded based on ranking on Dec 31, 2026. AI anti-cheat active. OFUSE PW required for verification.</p>
+            </div>
+            <a href="https://ofuse.me/d33e72b9" target="_blank" class="block bg-orange-600 text-white text-center py-2 rounded font-bold text-[11px] mt-2 active:bg-orange-500">OFUSE PASS / 応援</a>
         </div>
 
-        <input type="text" id="name" placeholder="名前 / Name" class="w-full p-4 rounded-xl bg-zinc-800 mb-2 text-white border border-zinc-600 outline-none focus:border-yellow-500">
-        <input type="text" id="pw" placeholder="OFUSEパスワード" class="w-full p-4 rounded-xl bg-zinc-800 mb-6 text-white border border-zinc-600 outline-none focus:border-yellow-500">
+        <input type="text" id="name" placeholder="Name / 名前" class="w-full p-4 rounded-xl bg-zinc-800 mb-2 text-white border border-zinc-600 outline-none focus:border-yellow-500">
+        <input type="text" id="pw" placeholder="OFUSE Password / パスワード" class="w-full p-4 rounded-xl bg-zinc-800 mb-6 text-white border border-zinc-600 outline-none focus:border-yellow-500">
         
         <button onclick="start()" class="w-full bg-red-700 py-5 rounded-2xl font-black text-2xl shadow-xl active:scale-95 mb-8">CHALLENGE START</button>
 
         <div class="ranking-list">
             <h2 class="text-center text-xs font-bold text-yellow-500 mb-3 tracking-widest uppercase italic">LIVE WORLD RANKING</h2>
-            <div id="ranking-container" class="text-zinc-500 text-center py-2 text-[10px]">Loading Live Data...</div>
+            <div id="ranking-container" class="text-zinc-500 text-center py-2 text-[10px]">Connecting to server...</div>
         </div>
 
-        <div class="h-10"></div> </div>
+        <div class="h-10"></div>
+    </div>
 </div>
 
 <header class="h-[120px] bg-black flex flex-col justify-center px-6 border-b border-zinc-800">
@@ -62,7 +68,7 @@
 <main id="game-area"></main>
 
 <script>
-    // --- FIREBASE 設定 (Firebaseコンソールから取得した値を貼り付けてください) ---
+    // --- FIREBASE SETTINGS ---
     const firebaseConfig = {
         apiKey: "YOUR_API_KEY",
         authDomain: "YOUR_PROJECT.firebaseapp.com",
@@ -73,26 +79,26 @@
         appId: "YOUR_APP_ID"
     };
     
-    // Firebase初期化（設定が空だとエラーになるため、入力チェックを推奨）
+    // Safety check for Firebase
+    let db = null;
     if(firebaseConfig.apiKey !== "YOUR_API_KEY") {
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        db = firebase.database();
+    }
 
-        function fetchRanking() {
-            db.ref('rankings').orderByChild('score').limitToLast(10).on('value', (snapshot) => {
-                const data = [];
-                snapshot.forEach((child) => { data.push(child.val()); });
-                data.reverse();
-                renderRanking(data);
-            });
-        }
-        function saveScore(finalScore) {
-            db.ref('rankings').push({ name: pName, score: finalScore, timestamp: Date.now() });
-        }
-    } else {
-        // 設定がない場合のダミー動作
-        function fetchRanking() { document.getElementById('ranking-container').innerText = "Ranking requires Firebase config."; }
-        function saveScore(s) { console.log("Score saved locally:", s); }
+    function fetchRanking() {
+        if(!db) { document.getElementById('ranking-container').innerText = "Ranking Offline (Firebase not set)"; return; }
+        db.ref('rankings').orderByChild('score').limitToLast(10).on('value', (snapshot) => {
+            const data = [];
+            snapshot.forEach((child) => { data.push(child.val()); });
+            data.reverse();
+            renderRanking(data);
+        });
+    }
+
+    function saveScore(finalScore) {
+        if(!db) return;
+        db.ref('rankings').push({ name: pName, score: finalScore, timestamp: Date.now() });
     }
 
     function renderRanking(list) {
@@ -139,13 +145,12 @@
 
     let stg=0, time=3000, tid=null, found=0, score=0, pName, pPass, live=false;
     const area=document.getElementById('game-area'), timerEl=document.getElementById('timer'), stgEl=document.getElementById('stg'), txtEl=document.getElementById('target-text');
-    const audio = new (window.AudioContext || window.webkitAudioContext)();
 
-    window.onload = () => { if(typeof fetchRanking === "function") fetchRanking(); };
+    window.onload = fetchRanking;
 
     function start() {
         pName=document.getElementById('name').value; pPass=document.getElementById('pw').value;
-        if(!pName || !pPass) return alert("名前とパスワードを入力してください");
+        if(!pName || !pPass) return alert("Required / 入力必須");
         document.getElementById('start-screen').style.display='none';
         stg=0; score=0; live=true; loadStage(); 
         if(!tid) tid=setInterval(tick, 10);
@@ -155,20 +160,15 @@
         if(!live) return;
         time--;
         timerEl.innerText = (time/100).toFixed(2);
-        if(time <= 1000) {
-            document.body.classList.add('danger-pulse');
-            timerEl.style.color='#ff4444';
-        } else {
-            document.body.classList.remove('danger-pulse');
-            timerEl.style.color='#fff';
-        }
+        if(time <= 1000) document.body.classList.add('danger-pulse');
+        else document.body.classList.remove('danger-pulse');
         if(time <= 0) endGame(false);
     }
 
     function loadStage() {
         area.innerHTML=""; found=0; time = 3000;
         const s = STAGES[stg];
-        stgEl.innerText=`STAGE ${stg+1}/25`; txtEl.innerText = s.m;
+        stgEl.innerText=`STAGE ${stg+1}/${STAGES.length}`; txtEl.innerText = s.m;
         
         if(s.s==='ch') {
             const wrap = document.createElement('div'); wrap.className = "flex h-full w-full items-center justify-around";
@@ -209,15 +209,14 @@
 
     function endGame(win) {
         live=false;
-        if(win && typeof saveScore === "function") saveScore(score);
+        if(win) saveScore(score);
         const o=document.createElement('div'); o.className="fixed inset-0 bg-black/95 z-[60000] flex flex-col items-center justify-center p-8 text-center";
         o.innerHTML=win?`
-            <h1 class="text-5xl text-yellow-400 font-black mb-4 italic">COMPLETE</h1>
-            <p class="text-lg">Score: ${score}</p>
-            <p class="text-xs mt-2">Player: ${pName}</p>
+            <h1 class="text-5xl text-yellow-400 font-black mb-4 italic uppercase">Clear!</h1>
+            <p class="text-lg">Final Score: ${score}</p>
             <button onclick="location.reload()" class="mt-10 bg-white text-black px-16 py-4 rounded-full font-black">TITLE</button>
         `:`
-            <h1 class="text-7xl text-red-600 font-black mb-8 italic">TIME UP</h1>
+            <h1 class="text-7xl text-red-600 font-black mb-8 italic uppercase">Game Over</h1>
             <button onclick="location.reload()" class="bg-red-600 text-white px-16 py-5 rounded-full font-black">RETRY</button>
         `;
         document.body.append(o);
