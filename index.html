@@ -2,149 +2,157 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-    <title>GIGA-HARD 2026 - FINAL MONOLITH</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Search Challenge GIGA-HARD</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root { --main: #ed6c00; --red: #d32f2f; }
-        * { touch-action: manipulation; box-sizing: border-box; }
-        body { margin: 0; background: #fff; color: #333; font-family: sans-serif; overflow: hidden; }
-        #portal { position: fixed; inset: 0; background: #fff; z-index: 10000; display: flex; flex-direction: column; align-items: center; overflow-y: auto; padding: 30px 20px; }
-        .hero { font-size: 32px; font-weight: 900; color: var(--main); margin-bottom: 20px; text-align: center; }
-        .card { width: 100%; max-width: 500px; background: #f9f9f9; border-left: 6px solid var(--main); padding: 20px; margin-bottom: 20px; border-radius: 4px; line-height: 1.6; }
-        .btn-ofuse { display: block; width: 100%; max-width: 400px; background: var(--main); color: #fff; text-decoration: none; padding: 20px; border-radius: 12px; font-weight: bold; text-align: center; box-shadow: 0 4px 15px rgba(237,108,0,0.3); margin-bottom: 15px; font-size: 18px; }
-        .btn-start { width: 100%; max-width: 400px; padding: 22px; background: #222; color: #fff; border: none; border-radius: 12px; font-size: 24px; font-weight: bold; cursor: pointer; }
-        .hud { height: 65px; border-bottom: 2px solid #eee; display: flex; align-items: center; justify-content: space-around; background: #fff; font-weight: bold; }
-        #timer { font-family: 'Courier New', monospace; font-size: 36px; color: var(--red); }
-        .field { width: 100vw; height: calc(100vh - 65px); position: relative; overflow: hidden; }
-        .target { position: absolute; font-size: 32px; cursor: pointer; z-index: 500; }
-        .ghost { position: absolute; width: 12px; height: 12px; background: rgba(0,0,0,0.05); border-radius: 50%; cursor: pointer; z-index: 1000; }
-        .dummy { position: absolute; font-size: 22px; pointer-events: none; opacity: 0.7; }
-        #overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.98); z-index: 11000; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        body { background: #000; color: #fff; font-family: sans-serif; overflow: hidden; user-select: none; }
+        #game-area { height: calc(100vh - 120px); position: relative; background: #fff; overflow: hidden; }
+        .emoji { position: absolute; cursor: pointer; font-size: 2.5rem; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; }
+        .target { z-index: 9999; } /* ターゲットを最前面に */
+        .danger-pulse #game-area { animation: pulse 0.5s infinite alternate; }
+        @keyframes pulse { from { background: #fff; } to { background: #ffb3b3; } }
+        .spiral-zone { position: absolute; width: 44px; height: 44px; z-index: 10000; }
     </style>
 </head>
 <body>
 
-<div id="portal">
-    <div class="hero">GIGA-HARD 2026</div>
-    <div class="card">
-        <strong>[ 規約 / Terms ]</strong>
-        <p style="font-size:14px;">収益はUNICEF/国境なき医師団へ。2026年末まで進化し続けます。<br>
-        <small>Revenue donated to UNICEF/MSF. Updates until 2026 end.</small></p>
+<div id="start-screen" class="fixed inset-0 z-[50000] bg-black p-6 overflow-y-auto">
+    <div class="max-w-md mx-auto">
+        <h1 class="text-3xl font-bold text-yellow-400 text-center mb-6">SEARCH CHALLENGE<br>GIGA-HARD</h1>
+        
+        <div class="bg-zinc-900 p-4 rounded-xl text-[10px] leading-tight space-y-3 mb-6 border border-zinc-700 text-zinc-300">
+            <p>【規約 / Terms】<br>・収益の一部はユニセフ等へ寄付予定 (Donations to UNICEF, etc.)</p>
+            <p>・2026年12月31日 0:00時点の順位でJCBギフト券を贈呈 (Final rankings on Dec 31, 2026. Prize: JCB Gift Cards)</p>
+            <p>・AI監視による不正検知時は失格 (AI monitoring for fraud)</p>
+            <p>・本人確認にOFUSEパスワードが必要 (OFUSE PW required for prize claim)</p>
+            <a href="https://ofuse.me/d33e72b9" target="_blank" class="block bg-orange-600 text-white text-center py-2 rounded font-bold text-xs mt-2">OFUSEで応援 & パスワード取得</a>
+        </div>
+
+        <input type="text" id="name" placeholder="名前" class="w-full p-3 rounded bg-zinc-800 mb-2 text-white border border-zinc-600">
+        <input type="text" id="pw" placeholder="OFUSEパスワード" class="w-full p-3 rounded bg-zinc-800 mb-4 text-white border border-zinc-600">
+        <button onclick="start()" class="w-full bg-red-600 py-4 rounded-xl font-bold text-xl">挑戦開始</button>
     </div>
-    <a href="https://ofuse.me/d33e72b9" target="_blank" class="btn-ofuse">OFUSEで参加・応援する / Join via OFUSE</a>
-    <input type="text" id="p-name" placeholder="Name" style="padding:15px; width:100%; max-width:400px; border-radius:10px; border:2px solid #ddd; margin-bottom:15px; text-align:center; font-size:18px;">
-    <button onclick="boot()" class="btn-start">GAME START</button>
 </div>
 
-<div id="overlay">
-    <h1 style="color:var(--red); font-size:48px;">TIME UP</h1>
-    <button onclick="location.reload()" style="padding:18px 60px; border-radius:40px; border:none; background:#222; color:#fff; font-size:22px; font-weight:bold; cursor:pointer;">RETRY</button>
-</div>
+<header class="h-[120px] bg-zinc-950 flex flex-col justify-center px-4">
+    <div class="flex justify-between text-xs mb-1">
+        <span id="stg" class="text-red-500 font-bold">STAGE 1 / 25</span>
+        <span id="msg" class="truncate max-w-[70%]">人間を探せ！</span>
+    </div>
+    <div id="timer" class="text-5xl font-mono font-bold text-center">30.00</div>
+</header>
 
-<div class="hud">
-    <div id="stg-info">STAGE 1 / 26</div>
-    <div id="timer">30.00</div>
-</div>
-<div class="field" id="field"></div>
+<main id="game-area"></main>
 
 <script>
-let cur = 1, ms = 3000, active = false, found = 0;
+    const STAGES = [
+        {m:"人間を探せ！", t:["🙋‍♂️"], n:["🐶","🐱","🐭"], c:600},
+        {m:"猫を探せ！", t:["🐱"], n:["🧔","👵","👦"], c:600},
+        {m:"自転車を探せ！", t:["🚲"], n:["🚗","🚌","🚙"], c:500},
+        {m:"クッキーを探せ！", t:["🍪"], n:["🍬","🍭","🍩"], c:600},
+        {m:"銀貨5枚を探せ！", t:["🥈","🥈","🥈","🥈","🥈"], n:["🪙"], c:700, s:"s"},
+        {m:"ピエロを探せ！", t:["🤡"], n:["💃","👱‍♀️"], c:600, s:"cl"},
+        {m:"国旗5つを探せ！", t:["🇯🇵","🇺🇸","🇫🇷","🇮🇹","🇰🇷"], n:["🌍","🌎"], c:600},
+        {m:"魚の骨を探せ！", t:["🦴"], n:["🐟","🐠"], c:650},
+        {m:"宇宙の梅干し！", t:["🔴"], n:["🪐","⭐","🌌"], c:700},
+        {m:"反転した「あ」5個！", t:["あ","あ","あ","あ","あ"], n:["あ"], c:400, s:"mi"},
+        {m:"鳥居を探せ！", t:["⛩"], n:["🏢","🏣"], c:650},
+        {m:"チェリーを探せ！", t:["🍒"], n:["🍎"], c:700},
+        {m:"イモムシを探せ！", t:["🐛"], n:["🍃","🌱"], c:650},
+        {m:"トロフィーを探せ！", t:["🏆"], n:["⚽","🏀"], c:650},
+        {m:"バナナを探せ！", t:["🍌"], n:["🌙"], c:700},
+        {m:"違う動物を5匹！", t:["🐼","🦁","🐯","🐨","🐒"], n:["🐭"], c:550},
+        {m:"タコを探せ！", t:["🐙"], n:["🦑"], c:700},
+        {m:"潜むUFOを探せ！", t:["🛸"], n:["✨","🌟"], c:800, s:"uf"},
+        {m:"アイス5個！", t:["🍦","🍦","🍦","🍦","🍦"], n:["🍭"], c:600},
+        {m:"茶色目5つ！", t:["👁️","👁️","👁️","👁️","👁️"], n:["👁️"], c:600, s:"ey"},
+        {m:"美女5人！", t:["💃","💃","💃","💃","💃"], n:["🧔"], c:700},
+        {m:"止まった■を5つ！", t:["■","■","■","■","■"], n:["■"], c:450, s:"sh"},
+        {m:"ヒヨコ5匹！", t:["🐥","🐥","🐥","🐥","🐥"], n:["🐓"], c:550},
+        {m:"運命の二択！", t:["WIN"], n:[], c:0, s:"ch"},
+        {m:"断線5箇所を探せ！", t:["G","G","G","G","G"], n:[], c:0, s:"sp"}
+    ];
 
-// 【全26ステージ物理実装：1行も省略なし】
-const stages = [
-    null,
-    {n:1, g:"🐶", c:["🌳","🏠"], num:400},
-    {n:2, g:"🌈", c:["☁️","☀️"], num:500},
-    {n:3, g:"🍀", c:["🌿","🍃"], num:600},
-    {n:4, g:"🍰", c:["🍬","🍩"], num:700},
-    {n:5, type:"GHOST", goals:5},
-    {n:6, g:"🦁", c:["🦒","🦓"], num:800},
-    {n:7, g:"🐳", c:["🌊","⛵"], num:850},
-    {n:8, g:"🦴", c:["🐟","🐠"], num:900},
-    {n:9, g:"🔺", c:["🔻","🔶"], num:950, goals:3},
-    {n:10, g:"あ", type:"mirror", num:800},
-    {n:11, g:"⛩️", c:["🏢","🏨"], num:1000},
-    {n:12, g:"🍒", c:["🍎","🍅"], num:900},
-    {n:13, g:"🐛", c:["🍃","🌱"], num:900},
-    {n:14, g:"🏆", c:["⚽","🏀"], num:900},
-    {n:15, g:"🍌", c:["🌙","🌛"], num:950},
-    {n:16, g:"🐼", c:["🐨","🐻"], num:1000, goals:3},
-    {n:17, g:"🐙", c:["🦑","🦀"], num:1100},
-    {n:18, g:"🛸", c:["✨","🌟"], num:1200, op:0.3},
-    {n:19, g:"🍦", c:["🍭","🍩"], num:1000, goals:3},
-    {n:20, g:"👀", c:["👁️"], num:1300, goals:3},
-    {n:21, g:"💃", c:["🧔","👴"], num:1100, goals:3},
-    {n:22, g:"■", c:["□"], num:1400, goals:5},
-    {n:23, g:"🐥", c:["🥚","🐓"], num:1500, goals:3},
-    {n:24, type:"FATE"},
-    {n:25, type:"SPIRAL", goals:8},
-    {n:26, g:"💖", c:["✨","🌸"], num:1800}
-];
+    let stg=0, time=3000, tid=null, found=0, score=0, pName, pPass, live=false;
+    const area=document.getElementById('game-area'), timerEl=document.getElementById('timer');
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
 
-function boot() {
-    if(!document.getElementById('p-name').value) return;
-    document.getElementById('portal').style.display = 'none';
-    run();
-}
+    function snd(f,t,d) {
+        const o=ctx.createOscillator(), g=ctx.createGain();
+        o.type=t; o.frequency.value=f; g.gain.value=0.1;
+        o.connect(g); g.connect(ctx.destination);
+        o.start(); o.stop(ctx.currentTime+d);
+    }
 
-function run() {
-    const f = document.getElementById('field'); f.innerHTML = ""; active = true; ms = 3000; found = 0;
-    const s = stages[cur];
-    document.getElementById('stg-info').innerText = `STAGE ${cur} / 26`;
-    f.style.background = (s.type === "SPIRAL") ? "#000" : "#fff";
+    function start() {
+        pName=document.getElementById('name').value; pPass=document.getElementById('pw').value;
+        if(!pName || !pPass) return alert("入力してください");
+        document.getElementById('start-screen').style.display='none';
+        stg=0; score=0; time=3000; live=true; load();
+        tid=setInterval(tick, 10);
+    }
 
-    if(s.type === "GHOST") {
-        for(let i=0; i<s.goals; i++){
-            const d=document.createElement('div'); d.className="ghost";
-            d.style.left=(10+Math.random()*80)+"%"; d.style.top=(10+Math.random()*80)+"%";
-            d.onclick=()=>{d.style.display="none"; found++; if(found>=s.goals) next();}; f.appendChild(d);
+    function tick() {
+        if(!live) return;
+        time--;
+        timerEl.innerText = (time/100).toFixed(2);
+        if(time<=1000) {
+            document.body.classList.add('danger-pulse');
+            timerEl.style.color='#f00';
+            if(time%50===0) snd(60,'sine',0.1);
         }
-    } else if(s.type === "FATE") {
-        const r=document.createElement('div'); r.style="position:absolute;left:20%;top:40%;width:100px;height:100px;background:#f44336;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;"; r.innerText="RED";
-        const b=document.createElement('div'); b.style="position:absolute;left:60%;top:40%;width:100px;height:100px;background:#2196f3;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;"; b.innerText="BLUE";
-        let win = Math.random()>0.5?r:b;
-        r.onclick=()=>r===win?next():location.reload(); b.onclick=()=>b===win?next():location.reload();
-        f.appendChild(r); f.appendChild(b);
-    } else if(s.type === "SPIRAL") {
-        for(let i=0; i<s.goals; i++){
-            const t=document.createElement('div'); t.style="position:absolute;width:15px;height:15px;background:#fff;border-radius:50%;cursor:pointer;box-shadow:0 0 10px #fff;";
-            t.style.left=(10+Math.random()*80)+"%"; t.style.top=(10+Math.random()*80)+"%";
-            t.onclick=()=>{t.style.display="none"; found++; if(found>=s.goals) next();}; f.appendChild(t);
-        }
-    } else {
-        if(s.num) {
-            for(let j=0; j<s.num; j++){
-                const d=document.createElement('div'); d.className="dummy";
-                d.style.left=Math.random()*98+"%"; d.style.top=Math.random()*98+"%";
-                d.innerText=s.c[j%s.c.length]; f.appendChild(d);
+        if(time<=0) end(false);
+    }
+
+    function load() {
+        area.innerHTML=""; found=0;
+        const s=STAGES[stg];
+        document.getElementById('stg').innerText=`STAGE ${stg+1} / 25`;
+        document.getElementById('msg').innerText=s.m;
+        if(s.s==='ch') {
+            const b1=document.createElement('button'); b1.className="absolute left-10 top-1/2 w-32 h-32 bg-red-600 rounded-full font-bold"; b1.innerText="RED";
+            const b2=document.createElement('button'); b2.className="absolute right-10 top-1/2 w-32 h-32 bg-blue-600 rounded-full font-bold"; b2.innerText="BLUE";
+            const ok=Math.random()>0.5?b1:b2;
+            b1.onclick=()=>b1===ok?next():end(false); b2.onclick=()=>b2===ok?next():end(false);
+            area.append(b1,b2);
+        } else if(s.s==='sp') {
+            const c=document.createElement('canvas'); c.width=area.clientWidth; c.height=area.clientHeight; area.append(c);
+            const x=c.getContext('2d'); x.beginPath(); x.arc(c.width/2,c.height/2,100,0,Math.PI*2); x.stroke();
+            for(let i=0;i<5;i++){
+                const h=document.createElement('div'); h.className="spiral-zone"; h.style.left=Math.random()*80+"%"; h.style.top=Math.random()*80+"%";
+                h.onclick=()=>{ h.style.background="rgba(0,255,0,0.5)"; found++; if(found>=5) next(); }; area.append(h);
             }
-        }
-        const gNum = s.goals || 1;
-        for(let k=0; k<gNum; k++){
-            const t=document.createElement('div'); t.className="target";
-            t.style.left=(10+Math.random()*80)+"%"; t.style.top=(10+Math.random()*80)+"%";
-            t.innerText=s.g;
-            if(s.type==="mirror") t.style.transform="scaleX(-1)";
-            if(s.op) t.style.opacity=s.op;
-            t.onclick=()=>{t.style.display="none"; found++; if(found>=gNum) next();}; f.appendChild(t);
+        } else {
+            for(let i=0;i<s.c;i++) {
+                const n=document.createElement('div'); n.className="emoji"; n.innerText=s.n[i%s.n.length];
+                n.style.left=Math.random()*90+"%"; n.style.top=Math.random()*90+"%";
+                n.onclick=()=>{ time=Math.max(0,time-300); snd(100,'sawtooth',0.1); }; area.append(n);
+            }
+            s.t.forEach(t=>{
+                const g=document.createElement('div'); g.className="emoji target"; g.innerText=t;
+                g.style.left=Math.random()*90+"%"; g.style.top=Math.random()*90+"%";
+                if(s.s==='mi') g.style.transform="scaleX(-1)";
+                if(s.s==='uf') g.style.opacity="0.2";
+                g.onclick=(e)=>{ e.stopPropagation(); g.style.display='none'; found++; snd(880,'sine',0.1); if(found>=s.t.length) next(); };
+                area.append(g);
+            });
         }
     }
-}
 
-function next() {
-    active = false; confetti({particleCount:150, spread:70, origin:{y:0.6}});
-    cur++;
-    setTimeout(() => { if(cur<=26) run(); else alert("YOU SAVED THE WORLD!"); }, 600);
-}
+    function next() {
+        score+=time; confetti(); stg++;
+        if(stg>=STAGES.length) end(true); else load();
+    }
 
-setInterval(() => {
-    if(!active) return;
-    ms--;
-    const t = document.getElementById('timer');
-    if(ms <= 0) { active = false; document.getElementById('overlay').style.display = "flex"; return; }
-    t.innerText = (ms/100).toFixed(2);
-}, 10);
+    function end(w) {
+        live=false; clearInterval(tid);
+        const o=document.createElement('div'); o.className="fixed inset-0 bg-black/90 z-[60000] flex flex-col items-center justify-center p-6 text-center";
+        o.innerHTML=w?`<h1 class="text-4xl text-yellow-400 font-bold mb-4">CLEAR!</h1><p>Score: ${score}</p><p class="text-xs mt-4">Name: ${pName}<br>Pass: ${pPass}</p><p class="text-[10px] text-red-500 mt-4">※この画面をスクショして保存してください</p><button onclick="location.reload()" class="mt-8 bg-white text-black px-8 py-2 rounded">TOP</button>`
+                    :`<h1 class="text-4xl text-red-600 font-bold mb-4">GAME OVER</h1><button onclick="location.reload()" class="mt-8 bg-red-600 text-white px-8 py-2 rounded">RETRY</button>`;
+        document.body.append(o);
+    }
 </script>
 </body>
 </html>
