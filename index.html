@@ -3,59 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GIGA-HARD Challenge</title>
+    <title>GIGA-HARD Challenge RT</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background: #000; color: #fff; font-family: sans-serif; overflow: hidden; user-select: none; margin: 0; }
         #game-area { height: calc(100vh - 120px); position: relative; background: #d1d5db; overflow: hidden; }
-        
-        /* 絵文字とターゲットの基本サイズ（40%縮小の1.5rem） */
-        .emoji { 
-            position: absolute; cursor: pointer; font-size: 1.5rem; 
-            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; 
-        }
-        .target { z-index: 10000; } 
-        .noise { z-index: 100; }
+        .emoji { position: absolute; cursor: pointer; font-size: 1.5rem; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+        .target { z-index: 10000; } .noise { z-index: 100; }
         .yellow-coin { color: #facc15; }
-
-        /* 22ステージ用：動く四角（ノイズ） */
-        @keyframes moveAround {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(calc(Math.random() * 20px), calc(Math.random() * 20px)); }
-        }
+        @keyframes moveAround { 0% { transform: translate(0, 0); } 100% { transform: translate(2px, 2px); } }
         .moving-square { animation: moveAround 0.2s infinite alternate ease-in-out; color: #4b5563; }
-
         .danger-pulse #game-area { animation: pulse 0.4s infinite alternate; }
         @keyframes pulse { from { background: #d1d5db; } to { background: #f87171; } }
+        .ranking-list { background: rgba(30, 30, 30, 0.9); border-radius: 1rem; padding: 1rem; margin-top: 1.5rem; width: 100%; border: 1px solid #444; }
+        .ranking-item { display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding: 6px 0; font-size: 0.8rem; }
+        .rank-num { font-weight: bold; color: #fbce03; width: 30px; }
     </style>
 </head>
 <body>
 
-<div id="start-screen" class="fixed inset-0 z-[50000] p-6 flex flex-col items-center overflow-y-auto bg-black/95">
+<div id="start-screen" class="fixed inset-0 z-[50000] p-6 flex flex-col items-center overflow-y-auto bg-black">
     <div class="max-w-md w-full">
-        <h1 class="text-4xl font-black text-yellow-400 text-center mb-8 italic">GIGA-HARD</h1>
-        <div class="bg-zinc-900 p-5 rounded-2xl text-[10px] space-y-3 mb-8 border border-zinc-700 text-zinc-300">
-            <p>【規約】収益の一部は寄付。2026年12月31日 0:00時点の成績で賞品確定。本人確認にOFUSEパスワード必須。</p>
-            <p>【Terms】Deadline: Dec 31, 2026. Prize: JCB Gift Card. OFUSE PW required.</p>
-        </div>
-        <input type="text" id="name" placeholder="Name / 名前" class="w-full p-4 rounded-xl bg-zinc-800 mb-3 text-white border border-zinc-600">
-        <input type="text" id="pw" placeholder="OFUSE Password / パスワード" class="w-full p-4 rounded-xl bg-zinc-800 mb-6 text-white border border-zinc-600">
+        <h1 class="text-4xl font-black text-yellow-400 text-center mb-6 italic">GIGA-HARD</h1>
+        
+        <input type="text" id="name" placeholder="名前 / Name" class="w-full p-4 rounded-xl bg-zinc-800 mb-2 text-white border border-zinc-600 outline-none">
+        <input type="text" id="pw" placeholder="OFUSEパスワード" class="w-full p-4 rounded-xl bg-zinc-800 mb-6 text-white border border-zinc-600 outline-none">
+        
         <button onclick="start()" class="w-full bg-red-700 py-5 rounded-2xl font-black text-2xl shadow-xl active:scale-95">START</button>
+
+        <div class="ranking-list">
+            <h2 class="text-center text-xs font-bold text-yellow-500 mb-3 tracking-widest uppercase italic">LIVE WORLD RANKING</h2>
+            <div id="ranking-container" class="text-zinc-400 text-center py-4 text-xs">Loading Live Data...</div>
+        </div>
     </div>
 </div>
 
-<header class="h-[120px] bg-black flex flex-col justify-center px-6 border-b border-zinc-800">
+<header class="h-[120px] bg-black flex flex-col justify-center px-6">
     <div class="flex justify-between text-xs mb-1 font-bold italic">
         <span id="stg" class="text-red-600">STAGE</span>
-        <span id="target-text" class="text-zinc-400">LOADING...</span>
+        <span id="target-text" class="text-zinc-400">WAITING...</span>
     </div>
-    <div id="timer" class="text-6xl font-mono font-black text-center text-white">30.00</div>
+    <div id="timer" class="text-6xl font-mono font-black text-center">30.00</div>
 </header>
 
 <main id="game-area"></main>
 
 <script>
+    // --- FIREBASE 設定 (ここを自分の設定に書き換えてください) ---
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT.firebaseapp.com",
+        databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+        projectId: "YOUR_PROJECT",
+        storageBucket: "YOUR_PROJECT.appspot.com",
+        messagingSenderId: "YOUR_ID",
+        appId: "YOUR_APP_ID"
+    };
+    
+    // Firebase初期化
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // リアルタイムランキング取得
+    function fetchRanking() {
+        db.ref('rankings').orderByChild('score').limitToLast(10).on('value', (snapshot) => {
+            const data = [];
+            snapshot.forEach((child) => {
+                data.push(child.val());
+            });
+            data.reverse(); // 降順に
+            renderRanking(data);
+        });
+    }
+
+    function renderRanking(list) {
+        const container = document.getElementById('ranking-container');
+        if (list.length === 0) {
+            container.innerHTML = "No scores yet.";
+            return;
+        }
+        container.innerHTML = list.map((item, index) => `
+            <div class="ranking-item">
+                <div class="flex">
+                    <span class="rank-num">${index + 1}</span>
+                    <span class="text-zinc-200 truncate max-w-[120px]">${item.name}</span>
+                </div>
+                <span class="font-mono text-yellow-400">${item.score.toLocaleString()}</span>
+            </div>
+        `).join('');
+    }
+
+    // スコア送信
+    function saveScore(finalScore) {
+        db.ref('rankings').push({
+            name: pName,
+            score: finalScore,
+            timestamp: Date.now()
+        });
+    }
+
+    // --- ゲームロジック (以下は前回同様) ---
     const STAGES = [
         {m:"人間を探せ (Find Human)", t:["🙋‍♂️"], n:["🐶","🐱","🐭"], c:600},
         {m:"猫を探せ (Find Cat)", t:["🐱"], n:["🧔","👵","👦"], c:600},
@@ -88,20 +138,13 @@
     const area=document.getElementById('game-area'), timerEl=document.getElementById('timer'), stgEl=document.getElementById('stg'), txtEl=document.getElementById('target-text');
     const audio = new (window.AudioContext || window.webkitAudioContext)();
 
-    function beep(f,t,d) {
-        if(audio.state === 'suspended') audio.resume();
-        const o=audio.createOscillator(), g=audio.createGain();
-        o.type=t; o.frequency.value=f; g.gain.value=0.05;
-        o.connect(g); g.connect(audio.destination);
-        o.start(); o.stop(audio.currentTime+d);
-    }
+    window.onload = fetchRanking;
 
     function start() {
         pName=document.getElementById('name').value; pPass=document.getElementById('pw').value;
-        if(!pName || !pPass) return alert("Required / 入力必須");
+        if(!pName || !pPass) return alert("Required");
         document.getElementById('start-screen').style.display='none';
-        stg=0; score=0; live=true;
-        loadStage(); 
+        stg=0; score=0; live=true; loadStage(); 
         if(!tid) tid=setInterval(tick, 10);
     }
 
@@ -109,22 +152,13 @@
         if(!live) return;
         time--;
         timerEl.innerText = (time/100).toFixed(2);
-        if(time <= 1000) {
-            document.body.classList.add('danger-pulse');
-            timerEl.style.color='#ff4444';
-            if(time % 50 === 0) beep(60, 'sine', 0.1);
-        } else {
-            document.body.classList.remove('danger-pulse');
-            timerEl.style.color='#fff';
-        }
         if(time <= 0) endGame(false);
     }
 
     function loadStage() {
         area.innerHTML=""; found=0; time = 3000;
         const s = STAGES[stg];
-        stgEl.innerText=`STAGE ${stg+1} / 25`;
-        txtEl.innerText = s.m;
+        stgEl.innerText=`STAGE ${stg+1}/25`; txtEl.innerText = s.m;
         
         if(s.s==='ch') {
             const wrap = document.createElement('div'); wrap.className = "flex h-full w-full items-center justify-around";
@@ -145,15 +179,14 @@
                 n.style.left=Math.random()*92+"%"; n.style.top=Math.random()*92+"%";
                 if(s.s==='s') n.classList.add('yellow-coin'); 
                 if(s.s==='sq') { n.classList.add('moving-square'); n.style.fontSize="0.8rem"; }
-                n.onclick=()=>{ time=Math.max(0,time-300); beep(100,'sawtooth',0.1); }; area.append(n);
+                n.onclick=()=>{ time=Math.max(0,time-300); }; area.append(n);
             }
             s.t.forEach(t=>{
                 const g=document.createElement('div'); g.className="emoji target"; g.innerText=t;
                 g.style.left=Math.random()*88+2+"%"; g.style.top=Math.random()*88+2+"%";
                 if(s.s==='mi') g.style.transform="scaleX(-1)";
                 if(s.s==='uf') g.style.opacity="0.1";
-                if(s.s==='sq') g.style.fontSize="0.8rem";
-                g.onclick=(e)=>{ e.stopPropagation(); g.style.visibility='hidden'; found++; beep(880,'sine',0.1); if(found>=s.t.length) nextStage(); };
+                g.onclick=(e)=>{ e.stopPropagation(); g.style.visibility='hidden'; found++; if(found>=s.t.length) nextStage(); };
                 area.append(g);
             });
         }
@@ -166,18 +199,15 @@
 
     function endGame(win) {
         live=false;
+        if(win) saveScore(score); // クリア時のみスコア送信
         const o=document.createElement('div'); o.className="fixed inset-0 bg-black/95 z-[60000] flex flex-col items-center justify-center p-8 text-center";
         o.innerHTML=win?`
             <h1 class="text-5xl text-yellow-400 font-black mb-4 italic">COMPLETE</h1>
-            <div class="bg-zinc-800 p-6 rounded-2xl text-left border border-zinc-600 shadow-2xl">
-                <p class="text-[10px] text-zinc-500 font-bold">Total Score: ${score}</p>
-                <p class="text-lg font-bold">Player: ${pName}</p>
-                <p class="text-lg font-bold">Pass: ${pPass}</p>
-            </div>
+            <p class="text-lg">Score: ${score}</p>
             <button onclick="location.reload()" class="mt-10 bg-white text-black px-16 py-4 rounded-full font-black">TITLE</button>
         `:`
             <h1 class="text-7xl text-red-600 font-black mb-8 italic">TIME UP</h1>
-            <button onclick="location.reload()" class="bg-red-600 text-white px-16 py-5 rounded-full font-black active:scale-95">RETRY</button>
+            <button onclick="location.reload()" class="bg-red-600 text-white px-16 py-5 rounded-full font-black">RETRY</button>
         `;
         document.body.append(o);
     }
