@@ -21,8 +21,8 @@
         .small-clown { transform: scale(0.7) !important; }
         .black-text { color: #000 !important; -webkit-text-fill-color: #000 !important; }
         
-        /* ★細い文字に設定（逆あ用） */
-        .thin-text { font-weight: 100 !important; font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif; }
+        /* ★「逆あ」用：極細(100)から「ほんの少し太い(300)」に調整 */
+        .thin-text { font-weight: 300 !important; font-family: 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif; }
         
         .yellow-dot { color: #facc15 !important; -webkit-text-fill-color: #facc15 !important; font-size: 1.1rem; }
         .yellow-star { color: #fbce03 !important; -webkit-text-fill-color: #fbce03 !important; }
@@ -107,8 +107,8 @@
     function start() {
         const nameVal = document.getElementById('name').value;
         const pwVal = document.getElementById('pw').value;
-        if(!nameVal) return alert("ニックネームを入力してください / Enter Nickname");
-        if(pwVal && pwVal.length !== 4) return alert("パスワードは4文字で入力してください / Password must be 4 characters");
+        if(!nameVal) return alert("Nickname required");
+        if(pwVal && pwVal.length !== 4) return alert("Password must be 4 chars");
         document.getElementById('start-screen').style.display='none';
         stg=0; score=0; live=true; loadStage();
         if(!tid) tid=setInterval(tick, 10);
@@ -158,7 +158,6 @@
                 if(s.s==='s') n.classList.add('yellow-dot');
                 if(s.s==='flower') n.classList.add('yellow-star');
                 if(s.s==='sq') n.classList.add('shaking-noise');
-                // ★ノイズも黒く、細く
                 if(s.s==='mi') { n.classList.add('black-text', 'thin-text'); }
                 n.onclick=()=>{ time=Math.max(0,time-300); }; area.append(n);
             }
@@ -166,7 +165,6 @@
                 const g=document.createElement('div'); g.className="emoji target"; g.innerText=emoji;
                 g.style.left=Math.random()*90+2+"%"; g.style.top=Math.random()*90+2+"%";
                 if(s.s==='clown') g.classList.add('small-clown');
-                // ★ターゲットも黒く、細く、そして反転
                 if(s.s==='mi') { g.classList.add('black-text', 'thin-text'); g.style.transform="scaleX(-1)"; }
                 if(s.s==='uf') g.style.opacity="0.3";
                 if(s.s==='sq') g.classList.add('hidden-square');
