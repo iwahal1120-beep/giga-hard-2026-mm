@@ -21,7 +21,10 @@
 
         .small-clown { transform: scale(0.7) !important; }
         .black-text { color: #000 !important; -webkit-text-fill-color: #000 !important; font-weight: bold; }
-        .yellow-dot { color: #facc15 !important; -webkit-text-fill-color: #facc15 !important; font-size: 2.2rem; }
+        
+        /* ★銀貨ステージ用のイエロー丸：サイズを50%縮小(1.1rem) */
+        .yellow-dot { color: #facc15 !important; -webkit-text-fill-color: #facc15 !important; font-size: 1.1rem; }
+        
         .yellow-star { color: #fbce03 !important; -webkit-text-fill-color: #fbce03 !important; }
         @keyframes vibration { 0% { transform: translate(0,0); } 100% { transform: translate(2px, 1px); } }
         .shaking-noise { animation: vibration 0.05s infinite; color: #4b5563; }
@@ -73,7 +76,7 @@
         {m:"猫を探せ", t:["🐱"], n:["🧔","👵","👦"], c:600},
         {m:"自転車を探せ", t:["🚲"], n:["🚗","🚌","🚙"], c:500},
         {m:"クッキーを探せ", t:["🍪"], n:["🍬","🍭","🍩"], c:600},
-        {m:"銀貨5個探せ", t:["🥈","🥈","🥈","🥈","🥈"], n:["●"], c:400, s:"s"},
+        {m:"銀貨5個探せ", t:["🥈","🥈","🥈","🥈","🥈"], n:["●"], c:500, s:"s"}, // ★ノイズを500個に増量
         {m:"ピエロを探せ", t:["🤡"], n:["💃","👱‍♀️"], c:600, s:"clown"},
         {m:"国旗10個探せ", t:["🇯🇵","🇺🇸","🇫🇷","🇮🇹","🇨🇳","🇷🇺","🇬🇧","🇩🇪","🇰🇷","🇪🇸"], n:["🌍","🌎"], c:600},
         {m:"骨を探せ", t:["🦴"], n:["🐟","🐠"], c:650},
