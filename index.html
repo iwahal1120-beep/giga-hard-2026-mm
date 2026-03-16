@@ -20,11 +20,11 @@
         .noise { z-index: 100; font-size: 1.2rem; }
 
         .small-clown { transform: scale(0.7) !important; }
+        
+        /* 真っ黒な文字に設定 */
         .black-text { color: #000 !important; -webkit-text-fill-color: #000 !important; font-weight: bold; }
         
-        /* ★銀貨ステージ用のイエロー丸：サイズを50%縮小(1.1rem) */
         .yellow-dot { color: #facc15 !important; -webkit-text-fill-color: #facc15 !important; font-size: 1.1rem; }
-        
         .yellow-star { color: #fbce03 !important; -webkit-text-fill-color: #fbce03 !important; }
         @keyframes vibration { 0% { transform: translate(0,0); } 100% { transform: translate(2px, 1px); } }
         .shaking-noise { animation: vibration 0.05s infinite; color: #4b5563; }
@@ -76,7 +76,7 @@
         {m:"猫を探せ", t:["🐱"], n:["🧔","👵","👦"], c:600},
         {m:"自転車を探せ", t:["🚲"], n:["🚗","🚌","🚙"], c:500},
         {m:"クッキーを探せ", t:["🍪"], n:["🍬","🍭","🍩"], c:600},
-        {m:"銀貨5個探せ", t:["🥈","🥈","🥈","🥈","🥈"], n:["●"], c:500, s:"s"}, // ★ノイズを500個に増量
+        {m:"銀貨5個探せ", t:["🥈","🥈","🥈","🥈","🥈"], n:["●"], c:500, s:"s"},
         {m:"ピエロを探せ", t:["🤡"], n:["💃","👱‍♀️"], c:600, s:"clown"},
         {m:"国旗10個探せ", t:["🇯🇵","🇺🇸","🇫🇷","🇮🇹","🇨🇳","🇷🇺","🇬🇧","🇩🇪","🇰🇷","🇪🇸"], n:["🌍","🌎"], c:600},
         {m:"骨を探せ", t:["🦴"], n:["🐟","🐠"], c:650},
@@ -158,12 +158,15 @@
                 if(s.s==='s') n.classList.add('yellow-dot');
                 if(s.s==='flower') n.classList.add('yellow-star');
                 if(s.s==='sq') n.classList.add('shaking-noise');
+                // ★追加：逆あステージのノイズも黒文字にする
+                if(s.s==='mi') n.classList.add('black-text');
                 n.onclick=()=>{ time=Math.max(0,time-300); }; area.append(n);
             }
             s.t.forEach(emoji => {
                 const g=document.createElement('div'); g.className="emoji target"; g.innerText=emoji;
                 g.style.left=Math.random()*90+2+"%"; g.style.top=Math.random()*90+2+"%";
                 if(s.s==='clown') g.classList.add('small-clown');
+                // ターゲット（逆あ）を黒文字にし、反転させる
                 if(s.s==='mi') { g.classList.add('black-text'); g.style.transform="scaleX(-1)"; }
                 if(s.s==='uf') g.style.opacity="0.3";
                 g.onclick=(e)=>{ e.stopPropagation(); g.style.visibility='hidden'; found++; if(found >= s.t.length) nextStage(); };
