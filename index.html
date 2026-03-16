@@ -10,7 +10,6 @@
         body { background: #000; color: #fff; font-family: sans-serif; overflow: hidden; user-select: none; margin: 0; }
         #game-area { height: calc(100vh - 120px); position: relative; background: #d1d5db; overflow: hidden; }
 
-        /* 威嚇演出：ピンク50%薄め */
         .danger-mode #game-area { animation: menace-pink 0.15s infinite alternate !important; }
         .danger-mode #timer { color: #ff0000 !important; transform: scale(1.1); font-weight: 900; }
         @keyframes menace-pink { 0% { background: #d1d5db; } 100% { background: #ffb6c1; } }
@@ -20,14 +19,16 @@
         .noise { z-index: 100; font-size: 1.2rem; }
 
         .small-clown { transform: scale(0.7) !important; }
+        .black-text { color: #000 !important; -webkit-text-fill-color: #000 !important; }
         
-        /* 真っ黒な文字に設定 */
-        .black-text { color: #000 !important; -webkit-text-fill-color: #000 !important; font-weight: bold; }
+        /* ★細い文字に設定（逆あ用） */
+        .thin-text { font-weight: 100 !important; font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif; }
         
         .yellow-dot { color: #facc15 !important; -webkit-text-fill-color: #facc15 !important; font-size: 1.1rem; }
         .yellow-star { color: #fbce03 !important; -webkit-text-fill-color: #fbce03 !important; }
         @keyframes vibration { 0% { transform: translate(0,0); } 100% { transform: translate(2px, 1px); } }
         .shaking-noise { animation: vibration 0.05s infinite; color: #4b5563; }
+        .hidden-square { color: #d1d5db !important; -webkit-text-fill-color: #d1d5db !important; }
         .ranking-list { background: rgba(30, 30, 30, 0.9); border-radius: 1rem; padding: 1rem; width: 100%; border: 1px solid #444; margin-bottom: 2rem; }
     </style>
 </head>
@@ -108,7 +109,6 @@
         const pwVal = document.getElementById('pw').value;
         if(!nameVal) return alert("ニックネームを入力してください / Enter Nickname");
         if(pwVal && pwVal.length !== 4) return alert("パスワードは4文字で入力してください / Password must be 4 characters");
-        
         document.getElementById('start-screen').style.display='none';
         stg=0; score=0; live=true; loadStage();
         if(!tid) tid=setInterval(tick, 10);
@@ -158,17 +158,18 @@
                 if(s.s==='s') n.classList.add('yellow-dot');
                 if(s.s==='flower') n.classList.add('yellow-star');
                 if(s.s==='sq') n.classList.add('shaking-noise');
-                // ★追加：逆あステージのノイズも黒文字にする
-                if(s.s==='mi') n.classList.add('black-text');
+                // ★ノイズも黒く、細く
+                if(s.s==='mi') { n.classList.add('black-text', 'thin-text'); }
                 n.onclick=()=>{ time=Math.max(0,time-300); }; area.append(n);
             }
             s.t.forEach(emoji => {
                 const g=document.createElement('div'); g.className="emoji target"; g.innerText=emoji;
                 g.style.left=Math.random()*90+2+"%"; g.style.top=Math.random()*90+2+"%";
                 if(s.s==='clown') g.classList.add('small-clown');
-                // ターゲット（逆あ）を黒文字にし、反転させる
-                if(s.s==='mi') { g.classList.add('black-text'); g.style.transform="scaleX(-1)"; }
+                // ★ターゲットも黒く、細く、そして反転
+                if(s.s==='mi') { g.classList.add('black-text', 'thin-text'); g.style.transform="scaleX(-1)"; }
                 if(s.s==='uf') g.style.opacity="0.3";
+                if(s.s==='sq') g.classList.add('hidden-square');
                 g.onclick=(e)=>{ e.stopPropagation(); g.style.visibility='hidden'; found++; if(found >= s.t.length) nextStage(); };
                 area.append(g);
             });
