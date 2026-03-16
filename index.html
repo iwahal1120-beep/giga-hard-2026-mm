@@ -22,15 +22,12 @@
         .target { z-index: 10000; font-size: 1.5rem; } 
         .noise { z-index: 100; font-size: 1.2rem; }
 
-        /* 特殊スタイル */
         .small-clown { transform: scale(0.7) !important; }
         .black-text { color: #000 !important; -webkit-text-fill-color: #000 !important; font-weight: bold; }
         .yellow-dot { color: #facc15 !important; -webkit-text-fill-color: #facc15 !important; font-size: 2.2rem; }
         .yellow-star { color: #fbce03 !important; -webkit-text-fill-color: #fbce03 !important; }
-        
         @keyframes vibration { 0% { transform: translate(0,0); } 100% { transform: translate(2px, 1px); } }
         .shaking-noise { animation: vibration 0.05s infinite; color: #4b5563; }
-
         .ranking-list { background: rgba(30, 30, 30, 0.9); border-radius: 1rem; padding: 1rem; width: 100%; border: 1px solid #444; margin-bottom: 2rem; }
     </style>
 </head>
@@ -38,13 +35,23 @@
 
 <div id="start-screen" class="fixed inset-0 z-[50000] p-6 flex flex-col items-center overflow-y-auto bg-black">
     <div class="max-w-md w-full flex flex-col items-center">
-        <h1 class="text-4xl font-black text-yellow-400 mb-6 italic uppercase">GIGA-HARD</h1>
+        <h1 class="text-4xl font-black text-yellow-400 mb-6 italic uppercase tracking-tighter">GIGA-HARD</h1>
         
         <div class="bg-zinc-900 p-4 rounded-xl text-[10px] space-y-3 mb-6 border border-zinc-700 text-zinc-300">
-            <p class="text-white font-bold underline decoration-red-600 uppercase">【規約 / Terms】</p>
-            <p>・予告なくゲームは増えます。全て完了がクリア条件です。</p>
-            <p class="text-zinc-500 italic">・Stages increase without notice. Complete ALL to clear.</p>
-            <a href="https://ofuse.me/d33e72b9" target="_blank" class="block bg-orange-600 text-white text-center py-2 rounded font-bold uppercase tracking-widest active:scale-95 transition-transform">OFUSE PASS / 応援</a>
+            <div class="border-b border-zinc-700 pb-2">
+                <p class="text-white font-bold uppercase underline decoration-red-600">【規約 / Terms】</p>
+                <p>・予告なくゲームは増えます。全て完了がクリア条件です。</p>
+                <p class="text-zinc-500 italic">・Stages increase without notice. Complete ALL to clear.</p>
+            </div>
+            <div class="border-b border-zinc-700 pb-2">
+                <p>・不正行為（マクロ・スクリプト等）は即失格・記録削除となります。</p>
+                <p class="text-zinc-500 italic">・Any cheating (macros/scripts) will result in immediate disqualification.</p>
+            </div>
+            <div class="border-b border-zinc-700 pb-2">
+                <p>・2026年12月31日のスコアでギフト券贈呈。本人確認にOFUSEパスワードが必須です。</p>
+                <p class="text-zinc-500 italic">・Gift card for high scores by Dec 31, 2026. OFUSE PW required for verification.</p>
+            </div>
+            <a href="https://ofuse.me/d33e72b9" target="_blank" class="block bg-orange-600 text-white text-center py-2 rounded font-bold uppercase tracking-widest active:scale-95 transition">OFUSE PASS / 寄付・応援</a>
         </div>
 
         <input type="text" id="name" placeholder="Name" class="w-full p-4 rounded-xl bg-zinc-800 mb-2 border border-zinc-600 outline-none text-white">
