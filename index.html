@@ -73,10 +73,11 @@
                     <span class="text-zinc-400 font-normal italic">Please use the same password for the game and OFUSE. Identity will be verified via password.</span>
                 </p>
 
-                <p class="text-blue-400 font-bold mb-2 text-[10px] leading-relaxed border-t border-zinc-800 pt-2">
-                    このゲームは不規則にゲームが追加され、最終全てのゲームのタイムで競います。<br>
-                    <span class="text-zinc-400 font-normal italic">New stages will be added irregularly. Ranking is based on the total time of all final stages.</span>
-                </p>
+                <div class="text-blue-400 font-bold mb-2 text-[10px] leading-relaxed border-t border-zinc-800 pt-2 space-y-1">
+                    <p class="text-green-400 text-xs">このゲームは無料です！ (Free to Play!)</p>
+                    <p>このゲームは不規則にゲームが追加され、最終全てのゲームのタイムで競います。</p>
+                    <p class="text-zinc-400 font-normal italic">New stages will be added irregularly. Ranking is based on the total time of all final stages.</p>
+                </div>
 
                 <p class="text-zinc-500 text-[9px] leading-tight border-t border-zinc-800 pt-2">
                     集まった募金は、ユニセフ・国境なき医師団などへ寄付予定。<br>
@@ -95,11 +96,15 @@
 </div>
 
 <header class="h-[120px] bg-black flex flex-col justify-center px-6 border-b border-zinc-800">
-    <div class="flex justify-between text-xs font-bold italic text-zinc-400">
+    <div class="text-center mb-1">
+        <div class="text-sm font-black text-zinc-500 italic uppercase leading-none">GIGA-HARD チャレンジ RT</div>
+        <div class="text-[10px] font-bold text-zinc-600 italic uppercase leading-none tracking-tighter">GIGA-HARD Challenge RT</div>
+    </div>
+    <div class="flex justify-between text-[10px] font-bold italic text-zinc-400 mb-1">
         <span id="stg" class="text-red-600 uppercase">STAGE</span>
         <span id="target-text"></span>
     </div>
-    <div id="timer" class="text-6xl font-mono font-black text-center tabular-nums">30.00</div>
+    <div id="timer" class="text-5xl font-mono font-black text-center tabular-nums">30.00</div>
 </header>
 
 <main id="game-area">
