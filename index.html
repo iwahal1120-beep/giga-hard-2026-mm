@@ -24,7 +24,6 @@
         .small-clown { transform: scale(0.6) !important; }
         #spiral-canvas { position: absolute; inset: 0; z-index: 50; pointer-events: none; display: none; }
         .cut-point { position: absolute; width: 28px; height: 28px; z-index: 20000; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        /* ★ここを修正：背景と同じ灰色にして隠す */
         .gap-pixel { width: 3px; height: 3px; background: #d1d5db; border-radius: 50%; }
         .ranking-box { background: rgba(20, 20, 20, 0.9); border: 1px solid #444; width: 100%; border-radius: 12px; padding: 12px; margin-top: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
         .ranking-item { display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding: 4px 8px; font-size: 11px; font-family: 'Courier New', Courier, monospace; }
@@ -57,7 +56,7 @@
             <p class="text-white font-bold uppercase underline decoration-red-600 mb-2">【重要/IMPORTANT】</p>
             <p class="text-yellow-400 font-bold mb-2 text-[11px]">
                 ゲームとOFUSEのパスワードは同じものを使用してください。パスワードで本人確認を行います。<br>
-                <span class="text-zinc-400 font-normal italic">Use the same password for game and OFUSE. Identity Verified via password.</span>
+                <span class="text-zinc-400 font-normal italic">Use the same password for game and OFUSE. Verified via password.</span>
             </p>
             <div class="text-blue-400 font-bold mb-2 text-[10px] border-t border-zinc-800 pt-2 space-y-1">
                 <p class="text-green-400 text-xs">このゲームは無料です！ (Free to Play!)</p>
@@ -114,10 +113,10 @@
         {m:"切れているところ8個探せ / Find 8 Gaps in Spiral", s:"sp"}
     ];
 
-    let stg=0, time=3000, tid=null, found=0, score=0, live=false;
+    let stg=0, time=3000, tid=null, found=0, totalTime=0, live=false;
     const area=document.getElementById('game-area'), canvas=document.getElementById('spiral-canvas'), ctx=canvas.getContext('2d'), 
           timerEl=document.getElementById('timer'), stgEl=document.getElementById('stg'), txtEl=document.getElementById('target-text'), 
-          bodyEl=document.body;
+          bodyEl=document.getElementById('main-body');
 
     window.onload = () => { 
         updateRanking();
@@ -125,34 +124,39 @@
     };
 
     function updateRanking() {
-        let ranks = JSON.parse(localStorage.getItem('giga-hard-final-ranks')) || [];
+        let ranks = JSON.parse(localStorage.getItem('giga-hard-rta-ranks')) || [];
         const listEl = document.getElementById('ranking-list');
-        listEl.innerHTML = '<p class="text-[9px] text-zinc-500 mb-2 border-b border-zinc-800 pb-1 text-center whitespace-nowrap">Ranking (Completed All Stages)</p>';
-        ranks.sort((a,b) => b.score - a.score).slice(0, 10).forEach((r, i) => {
+        listEl.innerHTML = '<p class="text-[9px] text-zinc-500 mb-2 border-b border-zinc-800 pb-1 text-center whitespace-nowrap">RTA Ranking (Total Time in Seconds)</p>';
+        // タイムが短い順（昇順）にソート
+        ranks.sort((a,b) => a.score - b.score).slice(0, 10).forEach((r, i) => {
             const item = document.createElement('div');
             item.className = "ranking-item";
-            item.innerHTML = `<span><span class="rank-num">${i+1}</span>${r.name}</span><span class="text-yellow-500 font-bold">${r.score.toLocaleString()}</span>`;
+            // タイムを見やすく秒単位（00.00）で表示
+            const displayTime = (r.score / 100).toFixed(2);
+            item.innerHTML = `<span><span class="rank-num">${i+1}</span>${r.name}</span><span class="text-yellow-500 font-bold">${displayTime}s</span>`;
             listEl.append(item);
         });
     }
 
     function saveScore(name, score) {
-        let ranks = JSON.parse(localStorage.getItem('giga-hard-final-ranks')) || [];
+        let ranks = JSON.parse(localStorage.getItem('giga-hard-rta-ranks')) || [];
         ranks.push({name: name, score: score});
-        localStorage.setItem('giga-hard-final-ranks', JSON.stringify(ranks.sort((a,b) => b.score - a.score).slice(0, 20)));
+        // 保存時も昇順に並び替え
+        localStorage.setItem('giga-hard-rta-ranks', JSON.stringify(ranks.sort((a,b) => a.score - b.score).slice(0, 20)));
         updateRanking();
     }
 
     function start() {
         if(!document.getElementById('name').value) return alert("Nickname required");
         document.getElementById('start-screen').style.display='none';
-        stg=0; score=0; live=true; loadStage();
+        stg=0; totalTime=0; live=true; loadStage();
         if(!tid) tid=setInterval(tick, 10);
     }
 
     function tick() {
         if(!live) return;
-        time--; timerEl.innerText = (time/100).toFixed(2);
+        time--; totalTime++; // 経過時間を加算
+        timerEl.innerText = (time/100).toFixed(2);
         if(time <= 1000) bodyEl.classList.add('danger-mode');
         if(time <= 0) endGame(false);
     }
@@ -181,8 +185,7 @@
                 const cut = document.createElement('div'); cut.className = "cut-point";
                 const dot = document.createElement('div'); dot.className = "gap-pixel";
                 cut.append(dot); cut.style.left = Math.random()*80+10+"%"; cut.style.top = Math.random()*80+10+"%";
-                // クリックした時は緑色にして分かりやすくする
-                cut.onclick = () => { dot.style.background = "#22c55e"; dot.style.width = "12px"; dot.style.height = "12px"; cut.onclick = null; found++; if(found >= 8) nextStage(); };
+                cut.onclick = () => { dot.style.background = "#22c55e"; dot.style.width = "10px"; dot.style.height = "10px"; cut.onclick = null; found++; if(found >= 8) nextStage(); };
                 area.append(cut);
             }
         } else {
@@ -218,14 +221,14 @@
         ctx.stroke();
     }
     function nextStage() {
-        score += time; confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
         stg++; if(stg >= STAGES.length) endGame(true); else loadStage();
     }
     function endGame(win) {
         live=false;
-        if(win) saveScore(document.getElementById('name').value || "PLAYER", score);
+        if(win) saveScore(document.getElementById('name').value || "PLAYER", totalTime);
         const o=document.createElement('div'); o.className="fixed inset-0 bg-black/95 z-[60000] flex flex-col items-center justify-center p-8 text-center";
-        o.innerHTML=win?`<h1 class='text-4xl text-yellow-400 font-black mb-4 uppercase whitespace-nowrap'>ULTIMATE COMPLETE</h1><p class='text-xl'>Your Final Score: ${score}</p><button onclick='location.reload()' class='mt-10 bg-white text-black px-12 py-4 rounded-full font-black uppercase'>TITLE SCREEN</button>`:`<h1 class='text-7xl text-red-600 font-black mb-8 italic uppercase'>TIME UP</h1><button onclick='location.reload()' class='bg-red-600 text-white px-16 py-5 rounded-full font-black uppercase'>RETRY</button>`;
+        o.innerHTML=win?`<h1 class='text-4xl text-yellow-400 font-black mb-4 uppercase whitespace-nowrap'>ULTIMATE COMPLETE</h1><p class='text-xl'>Clear Time: ${(totalTime/100).toFixed(2)}s</p><button onclick='location.reload()' class='mt-10 bg-white text-black px-12 py-4 rounded-full font-black uppercase'>TITLE SCREEN</button>`:`<h1 class='text-7xl text-red-600 font-black mb-8 italic uppercase'>TIME UP</h1><button onclick='location.reload()' class='bg-red-600 text-white px-16 py-5 rounded-full font-black uppercase'>RETRY</button>`;
         document.body.append(o);
     }
 </script>
