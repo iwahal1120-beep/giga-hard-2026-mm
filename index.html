@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GIGA-HARD Challenge RT</title>
+    <title>GIGA-HARD Challenge RTA</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -42,15 +42,15 @@
             </div>
             <div class="p-6 text-center bg-gradient-to-b from-zinc-800 to-zinc-900">
                 <h2 class="text-4xl md:text-5xl font-black text-yellow-400 mb-2 italic animate-pulse">10万円にチャレンジ！</h2>
-                <p class="text-red-500 font-bold text-lg mb-4">終了 2026.12.31 0:00am</p>
+                <p class="text-red-500 font-bold text-lg mb-4">終了 2027.1.1 0:00am</p>
                 <div class="border-t border-zinc-700 pt-4 space-y-1 text-zinc-100 font-bold text-sm uppercase tracking-tighter">
                     <p>100,000 Yen Gift Card Giveaway / Time Challenge Game!</p>
-                    <p class="text-zinc-400 text-xs font-mono">Ends 2026.12.31 00:00</p>
+                    <p class="text-zinc-400 text-xs font-mono">Ends Jan 1 2027 at 12:00am</p>
                 </div>
             </div>
         </div>
 
-        <h1 class="text-3xl font-black text-zinc-400 mb-4 italic uppercase tracking-tighter">GIGA-HARD Challenge RT</h1>
+        <h1 class="text-3xl font-black text-zinc-400 mb-4 italic uppercase tracking-tighter text-center">GIGA-HARD Challenge RTA</h1>
         
         <div class="bg-zinc-900/80 p-4 rounded-xl text-[10px] space-y-3 mb-4 border border-zinc-700 text-zinc-300 w-full text-center">
             <p class="text-white font-bold uppercase underline decoration-red-600 mb-2">【重要/IMPORTANT】</p>
@@ -67,15 +67,15 @@
 
         <input type="text" id="name" placeholder="Nickname / ニックネーム" class="w-full p-4 rounded-xl bg-zinc-800 mb-2 border border-zinc-600 outline-none text-white text-center">
         <input type="password" id="pw" maxlength="4" placeholder="4-digit PW / 4ケタパスワード" class="w-full p-4 rounded-xl bg-zinc-800 mb-6 border border-zinc-600 outline-none text-white text-center">
-        <button onclick="start()" class="w-full bg-red-700 py-5 rounded-2xl font-black text-2xl active:scale-95 italic uppercase shadow-xl transition border-b-4 border-red-900">ALL 25 STAGES START</button>
+        <button onclick="start()" id="start-btn" class="w-full bg-red-700 py-5 rounded-2xl font-black text-2xl active:scale-95 italic uppercase shadow-xl transition border-b-4 border-red-900">ALL STAGES START</button>
         <div class="ranking-box" id="ranking-list"></div>
     </div>
 </div>
 
 <header class="h-[120px] bg-black flex flex-col justify-center px-6 border-b border-zinc-800">
-    <div class="flex justify-between text-[11px] font-bold italic text-zinc-400 mb-1">
-        <span id="stg" class="text-red-600 uppercase">STAGE</span>
-        <span id="target-text" class="text-white text-right"></span>
+    <div class="flex justify-between items-start text-[11px] font-bold italic text-zinc-400 mb-1">
+        <span id="stg" class="text-red-600 uppercase whitespace-nowrap mr-4">STAGE</span>
+        <span id="target-text" class="text-white text-right leading-tight"></span>
     </div>
     <div id="timer" class="text-6xl font-mono font-black text-center tabular-nums">30.00</div>
 </header>
@@ -95,7 +95,7 @@
         {m:"国旗10個探せ / Find 10 Flags", t:["🇯🇵","🇺🇸","🇫🇷","🇮🇹","🇨🇳","🇷🇺","🇬🇧","🇩🇪","🇰🇷","🇪🇸"], n:["🌍","🌎"], c:600},
         {m:"骨を探せ / Find the Bone", t:["🦴"], n:["🐟","🐠"], c:600},
         {m:"ピンクの花を探せ / Find the Pink Flower", t:["🌸"], n:["⭐"], c:600},
-        {m:"逆あを5個探せ / Find 5 Reversed 'A'", t:["あ","あ","あ","あ","あ"], n:["あ"], c:450, s:"mi"},
+        {m:"逆あを5個探せ / Find 5 Reversed 'あ'", t:["あ","あ","あ","あ","あ"], n:["あ"], c:450, s:"mi"},
         {m:"鳥居を探せ / Find the Torii Gate", t:["⛩"], n:["🏢","🏣"], c:600},
         {m:"チェリーを探せ / Find the Cherry", t:["🍒"], n:["🍎"], c:600},
         {m:"虫を探せ / Find the Bug", t:["🐛"], n:["🍃","🌱"], c:600},
@@ -118,11 +118,13 @@
           timerEl=document.getElementById('timer'), stgEl=document.getElementById('stg'), txtEl=document.getElementById('target-text'), 
           bodyEl=document.getElementById('main-body');
 
-    const DUMMY_DATA = [{name: "GIGA_KAMI", score: 69800},{name: "MSF_Supporter", score: 62000},{name: "Unicef_Hero", score: 55400}];
+    window.onload = () => { 
+        updateRanking();
+        document.getElementById('start-btn').innerText = `ALL ${STAGES.length} STAGES START`;
+    };
 
-    window.onload = () => { updateRanking(); };
     function updateRanking() {
-        let ranks = JSON.parse(localStorage.getItem('giga-hard-final-ranks')) || DUMMY_DATA;
+        let ranks = JSON.parse(localStorage.getItem('giga-hard-final-ranks')) || [];
         const listEl = document.getElementById('ranking-list');
         listEl.innerHTML = '<p class="text-[9px] text-zinc-500 mb-2 border-b border-zinc-800 pb-1 text-center">Ranking (Completed All Stages)</p>';
         ranks.sort((a,b) => b.score - a.score).slice(0, 10).forEach((r, i) => {
@@ -132,24 +134,28 @@
             listEl.append(item);
         });
     }
+
     function saveScore(name, score) {
-        let ranks = JSON.parse(localStorage.getItem('giga-hard-final-ranks')) || DUMMY_DATA;
+        let ranks = JSON.parse(localStorage.getItem('giga-hard-final-ranks')) || [];
         ranks.push({name: name, score: score});
         localStorage.setItem('giga-hard-final-ranks', JSON.stringify(ranks.sort((a,b) => b.score - a.score).slice(0, 20)));
         updateRanking();
     }
+
     function start() {
         if(!document.getElementById('name').value) return alert("Nickname required");
         document.getElementById('start-screen').style.display='none';
         stg=0; score=0; live=true; loadStage();
         if(!tid) tid=setInterval(tick, 10);
     }
+
     function tick() {
         if(!live) return;
         time--; timerEl.innerText = (time/100).toFixed(2);
         if(time <= 1000) bodyEl.classList.add('danger-mode');
         if(time <= 0) endGame(false);
     }
+
     function loadStage() {
         area.querySelectorAll('.emoji, .cut-point, .ch-wrap').forEach(el => el.remove());
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -157,7 +163,7 @@
         found=0; time=3000;
         bodyEl.classList.remove('danger-mode');
         const s = STAGES[stg];
-        stgEl.innerText = `STAGE ${stg+1}/25`;
+        stgEl.innerText = `STAGE ${stg+1}/${STAGES.length}`;
         txtEl.innerText = s.m;
         if(s.s==='ch') {
             const wrap = document.createElement('div'); wrap.className = "ch-wrap flex h-full w-full items-center justify-around";
