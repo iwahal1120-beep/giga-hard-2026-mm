@@ -18,6 +18,7 @@
         @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
         #game-area { height: calc(100vh - 145px); position: relative; background: #d1d5db; overflow: hidden; }
+        /* Danger Mode (残り10秒) の点滅 */
         .danger-mode #game-area { animation: menace-pink 0.15s infinite alternate !important; }
         .danger-mode #timer { color: #ff0000 !important; transform: scale(1.1); font-weight: 900; }
         @keyframes menace-pink { 0% { background: #d1d5db; } 100% { background: #ffb6c1; } }
@@ -25,8 +26,32 @@
         .emoji { position: absolute; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .target { z-index: 10000; font-size: 1.5rem; } 
         .noise { z-index: 100; font-size: 1.2rem; }
+        
+        /* --- 修正ギミック CSS --- */
         .yellow-dot { color: #facc15 !important; -webkit-text-fill-color: #facc15 !important; }
         .black-text { color: #000 !important; -webkit-text-fill-color: #000 !important; }
+        
+        /* 1. ピエロを大きく (Big Clown) */
+        .big-clown { transform: scale(3.0) !important; z-index: 10001; }
+        
+        /* 2, 5, 6. ピンクの花, UFO, 女性を薄く (Opacity) */
+        .ultra-faint { opacity: 0.03 !important; }
+        
+        /* 3, 4. 虫, パンダを小さく (Mini) */
+        .mini-emoji { transform: scale(0.4) !important; }
+        
+        /* 7. 止まっている四角を背景と同化、残り10秒で見えるように */
+        .hidden-square { 
+            color: #d1d5db !important; /* 通常時は背景色と同化 */
+            -webkit-text-fill-color: #d1d5db !important;
+            transition: color 0.1s;
+        }
+        /* Danger Mode (ピンク背景) の時だけ、四角の色を黒にして浮かび上がらせる */
+        .danger-mode .hidden-square { 
+            color: #333 !important; 
+            -webkit-text-fill-color: #333 !important;
+        }
+
         .shaking-noise { animation: vibration 0.05s infinite; color: #4b5563; }
         @keyframes vibration { 0% { transform: translate(0,0); } 100% { transform: translate(2px, 1px); } }
         
@@ -106,23 +131,23 @@
         {m:"自転車を探せ / Find the Bike", t:["🚲"], n:["🚗","🚌","🚙"], c:500},
         {m:"クッキーを探せ / Find the Cookie", t:["🍪"], n:["🍬","🍭","🍩"], c:500},
         {m:"銀貨5個探せ / Find 5 Silver Coins", t:["🥈","🥈","🥈","🥈","🥈"], n:["●"], c:500, s:"s"},
-        {m:"ピエロを探せ / Find the Clown", t:["🤡"], n:["💃","👱‍♀️"], c:500, s:"clown"},
+        {m:"ピエロを探せ / Find the Clown", t:["🤡"], n:["💃","👱‍♀️"], c:500, s:"clown"}, // 修正: ピエロ大きく
         {m:"国旗10個探せ / Find 10 Flags", t:["🇯🇵","🇺🇸","🇫🇷","🇮🇹","🇨🇳","🇷🇺","🇬🇧","🇩🇪","🇰🇷","🇪🇸"], n:["🌍","🌎"], c:600},
         {m:"骨を探せ / Find the Bone", t:["🦴"], n:["🐟","🐠"], c:600},
-        {m:"ピンクの花を探せ / Find the Pink Flower", t:["🌸"], n:["⭐"], c:600},
+        {m:"ピンクの花を探せ / Find the Pink Flower", t:["🌸"], n:["⭐"], c:600, s:"faint"}, // 修正: ピンクの花薄く
         {m:"逆あを5個探せ / Find 5 Reversed 'あ'", t:["あ","あ","あ","あ","あ"], n:["あ"], c:450, s:"mi"},
         {m:"鳥居を探せ / Find the Torii Gate", t:["⛩"], n:["🏢","🏣"], c:600},
         {m:"チェリーを探せ / Find the Cherry", t:["🍒"], n:["🍎"], c:600},
-        {m:"虫を探せ / Find the Bug", t:["🐛"], n:["🍃","🌱"], c:600},
+        {m:"虫を探せ / Find the Bug", t:["🐛"], n:["🍃","🌱"], c:600, s:"mini"}, // 修正: 虫小さく
         {m:"カップを探せ / Find the Trophy", t:["🏆"], n:["⚽","🏀"], c:600},
         {m:"バナナを探せ / Find the Banana", t:["🍌"], n:["🌙"], c:600},
-        {m:"パンダを探せ / Find the Panda", t:["🐼"], n:["🐨","🦁","🐯"], c:600},
+        {m:"パンダを探せ / Find the Panda", t:["🐼"], n:["🐨","🦁","🐯"], c:600, s:"mini"}, // 修正: パンダ小さく
         {m:"タコを探せ / Find the Octopus", t:["🐙"], n:["🦑"], c:650},
-        {m:"UFOを探せ / Find the UFO", t:["🛸"], n:["✨","🌟"], c:700, s:"uf"},
+        {m:"UFOを探せ / Find the UFO", t:["🛸"], n:["✨","🌟"], c:700, s:"uf"}, // 修正: UFO薄く
         {m:"ソフトクリーム5個 / Find 5 Soft Serves", t:["🍦","🍦","🍦","🍦","🍦"], n:["🍭"], c:600},
         {m:"バグを探せ / Find the Monster", t:["👾"], n:["📱","💻","💾"], c:650},
-        {m:"女性5人探せ / Find 5 Women", t:["💃","💃","💃","💃","💃"], n:["🧔"], c:600},
-        {m:"止まっている四角5個 / Find 5 Still Squares", t:["■","■","■","■","■"], n:["■"], c:500, s:"sq"},
+        {m:"女性5人探せ / Find 5 Women", t:["💃","💃","💃","💃","💃"], n:["🧔"], c:600, s:"faint"}, // 修正: 女性薄く
+        {m:"止まっている四角5個 / Find 5 Still Squares", t:["■","■","■","■","■"], n:["■"], c:500, s:"sq"}, // 修正: 四角同化、残り10秒で見える
         {m:"ひよこ5匹探せ / Find 5 Chicks", t:["🐥","🐥","🐥","🐥","🐥"], n:["🐓"], c:550},
         {m:"運命の二択 / Choice of Destiny", s:"ch"},
         {m:"切れているところ8個探せ / Find 8 Spiral Gaps", s:"sp"}
@@ -136,7 +161,7 @@
     window.onload = () => { updateRanking(); };
 
     function updateRanking() {
-        let ranks = JSON.parse(localStorage.getItem('giga-hard-final-v4')) || [];
+        let ranks = JSON.parse(localStorage.getItem('giga-hard-final-v5')) || [];
         const listEl = document.getElementById('ranking-list');
         listEl.innerHTML = '<p class="text-[9px] text-zinc-500 mb-1 border-b border-zinc-800 pb-1 text-center font-mono">LIVE RANKING / REACH THE UNKNOWN</p>';
         ranks.sort((a,b) => a.score - b.score).slice(0, 10).forEach((r, i) => {
@@ -148,9 +173,9 @@
     }
 
     function saveScore(name, score) {
-        let ranks = JSON.parse(localStorage.getItem('giga-hard-final-v4')) || [];
+        let ranks = JSON.parse(localStorage.getItem('giga-hard-final-v5')) || [];
         ranks.push({name: name, score: score});
-        localStorage.setItem('giga-hard-final-v4', JSON.stringify(ranks.sort((a,b) => a.score - b.score).slice(0, 20)));
+        localStorage.setItem('giga-hard-final-v5', JSON.stringify(ranks.sort((a,b) => a.score - b.score).slice(0, 20)));
         updateRanking();
     }
 
@@ -165,7 +190,10 @@
         if(!live) return;
         time--; totalTime++;
         timerEl.innerText = (time/100).toFixed(2);
+        
+        // 残り10秒 (1000) で Danger Mode に移行。背景が点滅し、隠し四角が見えるようになる
         if(time <= 1000) bodyEl.classList.add('danger-mode');
+        
         if(time <= 0) endGame(false);
     }
 
@@ -174,7 +202,7 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         canvas.style.display = "none";
         found=0; time=3000;
-        bodyEl.classList.remove('danger-mode');
+        bodyEl.classList.remove('danger-mode'); // ステージ開始時はDanger Mode解除
         const s = STAGES[stg];
         stgEl.innerText = `STAGE ${stg+1}/${STAGES.length}+?`;
         txtEl.innerText = s.m;
@@ -197,18 +225,32 @@
                 area.append(cut);
             }
         } else {
+            // ノイズ絵文字の生成
             for(let i=0; i<s.c; i++) {
                 const n=document.createElement('div'); n.className="emoji noise";
                 n.innerText=s.n[i%s.n.length]; n.style.left=Math.random()*94+"%"; n.style.top=Math.random()*94+"%";
+                
+                // 修正ギミックの適用 (Noise)
                 if(s.s==='s') n.classList.add('yellow-dot');
                 if(s.s==='sq') n.classList.add('shaking-noise');
                 if(s.s==='mi') n.classList.add('black-text');
+                if(s.s==='faint' || s.s==='uf') n.classList.add('ultra-faint'); // ノイズも薄く
+                if(s.s==='mini') n.classList.add('mini-emoji'); // ノイズも小さく
+
                 n.onclick=()=>{ time=Math.max(0,time-300); }; area.append(n);
             }
+            // ターゲット絵文字の生成
             s.t.forEach(emoji => {
                 const g=document.createElement('div'); g.className="emoji target"; g.innerText=emoji;
                 g.style.left=Math.random()*90+2+"%"; g.style.top=Math.random()*90+2+"%";
+                
+                // --- 修正ギミックの適用 (Target) ---
                 if(s.s==='mi') { g.classList.add('black-text'); g.style.transform="scaleX(-1)"; }
+                if(s.s==='clown') g.classList.add('big-clown'); // 1. ピエロ大きく
+                if(s.s==='faint' || s.s==='uf') g.classList.add('ultra-faint'); // 2, 5, 6. 薄く
+                if(s.s==='mini') g.classList.add('mini-emoji'); // 3, 4. 小さく
+                if(s.s==='sq') g.classList.add('hidden-square'); // 7. 四角同化
+
                 g.onclick=(e)=>{ e.stopPropagation(); g.style.visibility='hidden'; found++; if(found >= s.t.length) nextStage(); };
                 area.append(g);
             });
@@ -242,7 +284,7 @@
                 <button onclick='location.reload()' class='mt-6 text-zinc-500 font-bold'>TITLE</button>`;
         } else {
             o.innerHTML = `<h1 class='text-6xl text-red-600 font-black mb-4 leading-tight'>LOST IN<br>UNKNOWN</h1><p class='text-zinc-400 mb-8 uppercase text-xs font-bold'>絶望に飲まれました。現在25ステージ、さらに増殖中。</p>
-                <button onclick='share("増殖する絶望に飲まれた...。\\n現在25ステージ、さらに増殖中らしい。\\n誰かこの狂ったゲームを止めてくれ。\\n#GigaHardRTA")' class='btn-share'>絶望をXでシェア</button>
+                <button onclick='share("増殖する絶望に飲まれた...。\\nAIの嫌がらせ修正で視力が死んだ。\\n誰かこの狂ったゲームを止めてくれ。\\n#GigaHardRTA")' class='btn-share'>絶望をXでシェア</button>
                 <button onclick='location.reload()' class='btn-retry'>RETRY CHALLENGE</button>`;
         }
         document.body.append(o);
