@@ -3,116 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GIGA-HARD Challenge RTA - 100,000 Yen Giveaway</title>
-    <meta name="description" content="Ultimate RTA Challenge. Win 100,000 Yen! #GigaHardRTA">
+    <title>【未踏の絶望】GIGA-HARD Challenge RTA - 10万円にチャレンジ</title>
+    <meta name="description" content="25ステージは序章に過ぎない。締め切りまでステージは増殖し続ける。10万円に届くのは、この未知をねじ伏せた者だけ。#GigaHardRTA">
+    <meta property="og:title" content="【増殖する絶望】GIGA-HARD RTA">
+    <meta property="og:description" content="クリアしたと思ったか？ステージは君の知らない間に増殖する。現在25+???ステージ。">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background: #000; color: #fff; font-family: sans-serif; overflow: hidden; user-select: none; margin: 0; touch-action: manipulation; }
-        #game-area { height: calc(100vh - 120px); position: relative; background: #d1d5db; overflow: hidden; }
+        /* 増殖警告バー */
+        .system-ticker { background: #450a0a; color: #ff0000; font-family: monospace; font-size: 10px; padding: 4px 0; border-bottom: 1px solid #ff0000; overflow: hidden; white-space: nowrap; }
+        .ticker-content { display: inline-block; animation: ticker 20s linear infinite; }
+        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+        #game-area { height: calc(100vh - 145px); position: relative; background: #d1d5db; overflow: hidden; }
         .danger-mode #game-area { animation: menace-pink 0.15s infinite alternate !important; }
         .danger-mode #timer { color: #ff0000 !important; transform: scale(1.1); font-weight: 900; }
         @keyframes menace-pink { 0% { background: #d1d5db; } 100% { background: #ffb6c1; } }
-        .emoji { position: absolute; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; }
+        
+        .emoji { position: absolute; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .target { z-index: 10000; font-size: 1.5rem; } 
         .noise { z-index: 100; font-size: 1.2rem; }
-        .yellow-dot { color: #facc15 !important; -webkit-text-fill-color: #facc15 !important; font-size: 1.1rem; }
-        .black-text { color: #000 !important; -webkit-text-fill-color: #000 !important; }
-        .thin-text { font-weight: 300 !important; font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif; }
-        @keyframes vibration { 0% { transform: translate(0,0); } 100% { transform: translate(2px, 1px); } }
         .shaking-noise { animation: vibration 0.05s infinite; color: #4b5563; }
-        .hidden-square { color: #d1d5db !important; -webkit-text-fill-color: #d1d5db !important; }
-        .small-clown { transform: scale(0.6) !important; }
+        @keyframes vibration { 0% { transform: translate(0,0); } 100% { transform: translate(2px, 1px); } }
+        
         #spiral-canvas { position: absolute; inset: 0; z-index: 50; pointer-events: none; display: none; }
         .cut-point { position: absolute; width: 28px; height: 28px; z-index: 20000; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .gap-pixel { width: 3px; height: 3px; background: #d1d5db; border-radius: 50%; }
-        .ranking-box { background: rgba(20, 20, 20, 0.9); border: 1px solid #444; width: 100%; border-radius: 12px; padding: 12px; margin-top: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        .ranking-item { display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding: 4px 8px; font-size: 11px; font-family: 'Courier New', Courier, monospace; }
-        .rank-num { color: #facc15; font-weight: bold; margin-right: 6px; }
-        .share-btn { background: #1DA1F2; color: white; padding: 10px 20px; border-radius: 99px; font-weight: bold; margin-top: 10px; display: flex; align-items: center; gap: 8px; font-size: 14px; }
+        
+        .ranking-box { background: rgba(20, 20, 20, 0.9); border: 1px solid #444; width: 100%; border-radius: 12px; padding: 10px; margin-top: 10px; }
+        .ranking-item { display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding: 4px; font-size: 10px; font-family: monospace; }
+        
+        .btn-share { background: #1DA1F2; color: white; padding: 12px 20px; border-radius: 99px; font-weight: bold; display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+        .btn-retry { background: #dc2626; color: white; padding: 12px 20px; border-radius: 99px; font-weight: bold; margin-top: 10px; }
     </style>
 </head>
 <body id="main-body">
 
+<div class="system-ticker">
+    <div class="ticker-content">
+        ● SYSTEM WARNING: STAGES INCREASING... CURRENT: 25+??? | UNKNOWN TERRITORY DETECTED | SURVIVAL RATE: 0.01% | 100,000 YEN POOL ACTIVE | CLEARANCE REQUIRED BY 2027.1.1
+    </div>
+</div>
+
 <div id="start-screen" class="fixed inset-0 z-[50000] p-6 flex flex-col items-center overflow-y-auto bg-black">
-    <div class="max-w-md w-full flex flex-col items-center">
-        <div class="w-full bg-zinc-900 rounded-2xl border-2 border-orange-500 overflow-hidden mb-6 shadow-[0_0_15px_rgba(249,115,22,0.5)]">
-            <div class="bg-orange-600 p-3 text-center">
-                <a href="https://ofuse.me/d33e72b9" target="_blank" class="text-white font-black text-lg hover:underline decoration-white flex items-center justify-center gap-2">
-                    OFUSE / パスワード取得・募金 (Get Password & Donate)
-                </a>
-            </div>
-            <div class="p-6 text-center bg-gradient-to-b from-zinc-800 to-zinc-900">
-                <h2 class="text-4xl md:text-5xl font-black text-yellow-400 mb-2 italic animate-pulse">10万円にチャレンジ！</h2>
-                <p class="text-red-500 font-bold text-lg mb-4">終了 2027.1.1 0:00am</p>
-                <div class="border-t border-zinc-700 pt-4 space-y-1 text-zinc-100 font-bold text-sm uppercase tracking-tighter">
-                    <p>100,000 Yen Gift Card Giveaway / Time Challenge Game!</p>
-                    <p class="text-zinc-400 text-xs font-mono">Ends Jan 1 2027 at 12:00am</p>
-                </div>
+    <div class="max-w-md w-full">
+        <div class="w-full bg-zinc-900 rounded-2xl border-2 border-orange-500 overflow-hidden mb-4 shadow-[0_0_20px_rgba(249,115,22,0.4)]">
+            <div class="bg-orange-600 p-2 text-center text-white font-black text-sm">OFUSE / 寄付・パスワード取得</div>
+            <div class="p-4 text-center">
+                <h2 class="text-3xl font-black text-yellow-400 italic animate-pulse">10万円にチャレンジ！</h2>
+                <p class="text-zinc-400 text-[10px] mt-2 italic uppercase">The stages will increase until the deadline.</p>
             </div>
         </div>
 
-        <h1 class="text-3xl font-black text-zinc-400 mb-4 italic uppercase tracking-tighter text-center">GIGA-HARD Challenge RTA</h1>
-        
-        <div class="bg-zinc-900/80 p-4 rounded-xl text-[10px] space-y-3 mb-4 border border-zinc-700 text-zinc-300 w-full text-center">
-            <p class="text-white font-bold uppercase underline decoration-red-600 mb-2">【重要/IMPORTANT】</p>
-            <p class="text-yellow-400 font-bold mb-2 text-[11px]">
-                ゲームとOFUSEのパスワードは同じものを使用してください。パスワードで本人確認を行います。<br>
-                <span class="text-zinc-400 font-normal italic">Use the same password for game and OFUSE. Verified via password.</span>
+        <div class="bg-red-950/30 border border-red-900 p-3 rounded-xl mb-4 text-center">
+            <p class="text-red-500 font-bold text-xs underline decoration-red-500 mb-1 leading-tight">【増殖する未知の絶望】</p>
+            <p class="text-zinc-300 text-[9px] leading-relaxed">
+                25ステージは序章に過ぎない。締め切りまでに「知らないうちに」ステージは増えていく。
+                最終的に何ゲームをクリアしなければならないかは、AIすら知らない。
             </p>
-            <div class="text-blue-400 font-bold mb-2 text-[10px] border-t border-zinc-800 pt-2 space-y-1">
-                <p class="text-green-400 text-xs">このゲームは無料です！ (Free to Play!)</p>
-                <p>不規則にゲームが追加され、最終全てのゲームのタイムで競います。</p>
-                <p class="text-zinc-400 font-normal italic">New stages added irregularly. Ranking based on total time.</p>
-            </div>
         </div>
 
-        <input type="text" id="name" placeholder="Nickname / ニックネーム" class="w-full p-4 rounded-xl bg-zinc-800 mb-2 border border-zinc-600 outline-none text-white text-center">
-        <input type="password" id="pw" maxlength="4" placeholder="4-digit PW / 4ケタパスワード" class="w-full p-4 rounded-xl bg-zinc-800 mb-6 border border-zinc-600 outline-none text-white text-center">
-        <button onclick="start()" id="start-btn" class="w-full bg-red-700 py-5 rounded-2xl font-black text-2xl active:scale-95 italic uppercase shadow-xl transition border-b-4 border-red-900">ALL STAGES START</button>
+        <input type="text" id="name" placeholder="Nickname / ニックネーム" class="w-full p-4 rounded-xl bg-zinc-800 mb-2 border border-zinc-600 text-white text-center outline-none">
+        <input type="password" id="pw" maxlength="4" placeholder="4-digit PW" class="w-full p-4 rounded-xl bg-zinc-800 mb-4 border border-zinc-600 text-white text-center outline-none">
+        
+        <button onclick="start()" id="start-btn" class="w-full bg-red-700 py-5 rounded-2xl font-black text-2xl active:scale-95 italic transition border-b-4 border-red-950">UNKNOWN RTA START</button>
+        
         <div class="ranking-box" id="ranking-list"></div>
     </div>
 </div>
 
 <header class="h-[120px] bg-black flex flex-col justify-center px-6 border-b border-zinc-800">
-    <div class="flex justify-between items-start text-[11px] font-bold italic text-zinc-400 mb-1">
-        <span id="stg" class="text-red-600 uppercase whitespace-nowrap mr-4">STAGE</span>
-        <span id="target-text" class="text-white text-right leading-tight"></span>
+    <div class="flex justify-between items-start text-[11px] font-bold italic text-zinc-500">
+        <span id="stg" class="text-red-700">STAGE 0/25+?</span>
+        <span id="target-text" class="text-white text-right">INITIALIZING...</span>
     </div>
-    <div id="timer" class="text-6xl font-mono font-black text-center tabular-nums">30.00</div>
+    <div id="timer" class="text-6xl font-mono font-black text-center tabular-nums text-white">30.00</div>
 </header>
 
-<main id="game-area">
-    <canvas id="spiral-canvas"></canvas>
-</main>
+<main id="game-area"><canvas id="spiral-canvas"></canvas></main>
 
 <script>
     const STAGES = [
-        {m:"人間を探せ / Find the Human", t:["🙋‍♂️"], n:["🐶","🐱","🐭"], c:500},
-        {m:"猫を探せ / Find the Cat", t:["🐱"], n:["🧔","👵","👦"], c:500},
-        {m:"自転車を探せ / Find the Bike", t:["🚲"], n:["🚗","🚌","🚙"], c:500},
-        {m:"クッキーを探せ / Find the Cookie", t:["🍪"], n:["🍬","🍭","🍩"], c:500},
-        {m:"銀貨5個探せ / Find 5 Silver Coins", t:["🥈","🥈","🥈","🥈","🥈"], n:["●"], c:500, s:"s"},
-        {m:"ピエロを探せ / Find the Clown", t:["🤡"], n:["💃","👱‍♀️"], c:500, s:"clown"},
-        {m:"国旗10個探せ / Find 10 Flags", t:["🇯🇵","🇺🇸","🇫🇷","🇮🇹","🇨🇳","🇷🇺","🇬🇧","🇩🇪","🇰🇷","🇪🇸"], n:["🌍","🌎"], c:600},
-        {m:"骨を探せ / Find the Bone", t:["🦴"], n:["🐟","🐠"], c:600},
-        {m:"ピンクの花を探せ / Find the Pink Flower", t:["🌸"], n:["⭐"], c:600},
-        {m:"逆あを5個探せ / Find 5 Reversed 'あ'", t:["あ","あ","あ","あ","あ"], n:["あ"], c:450, s:"mi"},
-        {m:"鳥居を探せ / Find the Torii Gate", t:["⛩"], n:["🏢","🏣"], c:600},
-        {m:"チェリーを探せ / Find the Cherry", t:["🍒"], n:["🍎"], c:600},
-        {m:"虫を探せ / Find the Bug", t:["🐛"], n:["🍃","🌱"], c:600},
-        {m:"カップを探せ / Find the Trophy", t:["🏆"], n:["⚽","🏀"], c:600},
-        {m:"バナナを探せ / Find the Banana", t:["🍌"], n:["🌙"], c:600},
-        {m:"パンダを探せ / Find the Panda", t:["🐼"], n:["🐨","🦁","🐯"], c:600},
-        {m:"タコを探せ / Find the Octopus", t:["🐙"], n:["🦑"], c:650},
-        {m:"UFOを探せ / Find the UFO", t:["🛸"], n:["✨","🌟"], c:700, s:"uf"},
-        {m:"ソフトクリーム5個 / Find 5 Soft Serves", t:["🍦","🍦","🍦","🍦","🍦"], n:["🍭"], c:600},
-        {m:"バグを探せ / Find the Monster", t:["👾"], n:["📱","💻","💾"], c:650},
-        {m:"女性5人探せ / Find 5 Women", t:["💃","💃","💃","💃","💃"], n:["🧔"], c:600},
-        {m:"止まっている四角5個 / Find 5 Still Squares", t:["■","■","■","■","■"], n:["■"], c:500, s:"sq"},
-        {m:"ひよこ5匹探せ / Find 5 Chicks", t:["🐥","🐥","🐥","🐥","🐥"], n:["🐓"], c:550},
-        {m:"運命の二択 / Choice of Destiny", s:"ch"},
-        {m:"切れているところ8個探せ / Find 8 Spiral Gaps", s:"sp"}
+        {m:"人間を探せ / Find Human", t:["🙋‍♂️"], n:["🐶","🐱","🐭"], c:500},
+        {m:"猫を探せ / Find Cat", t:["🐱"], n:["🧔","👵","👦"], c:500},
+        {m:"自転車 / Find Bike", t:["🚲"], n:["🚗","🚌","🚙"], c:500},
+        {m:"クッキー / Find Cookie", t:["🍪"], n:["🍬","🍭","🍩"], c:500},
+        {m:"銀貨(5) / 5 Silver Coins", t:["🥈","🥈","🥈","🥈","🥈"], n:["●"], c:500, s:"s"},
+        {m:"ピエロ / Find Clown", t:["🤡"], n:["💃","👱‍♀️"], c:500, s:"clown"},
+        {m:"国旗(10) / 10 Flags", t:["🇯🇵","🇺🇸","🇫🇷","🇮🇹","🇨🇳","🇷🇺","🇬🇧","🇩🇪","🇰🇷","🇪🇸"], n:["🌍","🌎"], c:600},
+        {m:"骨 / Find Bone", t:["🦴"], n:["🐟","🐠"], c:600},
+        {m:"🌸 / Find Flower", t:["🌸"], n:["⭐"], c:600},
+        {m:"逆あ(5) / Reversed 'あ'", t:["あ","あ","あ","あ","あ"], n:["あ"], c:450, s:"mi"},
+        {m:"⛩ / Find Torii", t:["⛩"], n:["🏢","🏣"], c:600},
+        {m:"🍒 / Find Cherry", t:["🍒"], n:["🍎"], c:600},
+        {m:"🐛 / Find Bug", t:["🐛"], n:["🍃","🌱"], c:600},
+        {m:"🏆 / Find Trophy", t:["🏆"], n:["⚽","🏀"], c:600},
+        {m:"🍌 / Find Banana", t:["🍌"], n:["🌙"], c:600},
+        {m:"🐼 / Find Panda", t:["🐼"], n:["🐨","🦁","🐯"], c:600},
+        {m:"🐙 / Find Octopus", t:["🐙"], n:["🦑"], c:650},
+        {m:"🛸 / Find UFO", t:["🛸"], n:["✨","🌟"], c:700, s:"uf"},
+        {m:"🍦(5) / 5 Soft Serves", t:["🍦","🍦","🍦","🍦","🍦"], n:["🍭"], c:600},
+        {m:"👾 / Find Bug", t:["👾"], n:["📱","💻","💾"], c:650},
+        {m:"💃(5) / 5 Dancers", t:["💃","💃","💃","💃","💃"], n:["🧔"], c:600},
+        {m:"■(5) / 5 Still Squares", t:["■","■","■","■","■"], n:["■"], c:500, s:"sq"},
+        {m:"🐥(5) / 5 Chicks", t:["🐥","🐥","🐥","🐥","🐥"], n:["🐓"], c:550},
+        {m:"運命の二択 / Choice", s:"ch"},
+        {m:"螺旋の断線(8) / Spiral Gaps", s:"sp"}
     ];
 
     let stg=0, time=3000, tid=null, found=0, totalTime=0, live=false;
@@ -123,21 +120,21 @@
     window.onload = () => { updateRanking(); };
 
     function updateRanking() {
-        let ranks = JSON.parse(localStorage.getItem('giga-hard-rta-final-v2')) || [];
+        let ranks = JSON.parse(localStorage.getItem('giga-hard-final-v3')) || [];
         const listEl = document.getElementById('ranking-list');
-        listEl.innerHTML = '<p class="text-[9px] text-zinc-500 mb-2 border-b border-zinc-800 pb-1 text-center">RTA Ranking (Total Time)</p>';
+        listEl.innerHTML = '<p class="text-[9px] text-zinc-500 mb-1 border-b border-zinc-800 pb-1 text-center font-mono">LIVE RANKING / REACH THE UNKNOWN</p>';
         ranks.sort((a,b) => a.score - b.score).slice(0, 10).forEach((r, i) => {
             const item = document.createElement('div');
             item.className = "ranking-item";
-            item.innerHTML = `<span><span class="rank-num">${i+1}</span>${r.name}</span><span class="text-yellow-500 font-bold">${(r.score/100).toFixed(2)}s</span>`;
+            item.innerHTML = `<span><span class="text-red-600 font-bold mr-2">${i+1}</span>${r.name}</span><span class="text-yellow-500">${(r.score/100).toFixed(2)}s</span>`;
             listEl.append(item);
         });
     }
 
     function saveScore(name, score) {
-        let ranks = JSON.parse(localStorage.getItem('giga-hard-rta-final-v2')) || [];
+        let ranks = JSON.parse(localStorage.getItem('giga-hard-final-v3')) || [];
         ranks.push({name: name, score: score});
-        localStorage.setItem('giga-hard-rta-final-v2', JSON.stringify(ranks.sort((a,b) => a.score - b.score).slice(0, 20)));
+        localStorage.setItem('giga-hard-final-v3', JSON.stringify(ranks.sort((a,b) => a.score - b.score).slice(0, 20)));
         updateRanking();
     }
 
@@ -163,14 +160,14 @@
         found=0; time=3000;
         bodyEl.classList.remove('danger-mode');
         const s = STAGES[stg];
-        stgEl.innerText = `STAGE ${stg+1}/${STAGES.length}`;
+        stgEl.innerText = `STAGE ${stg+1}/${STAGES.length}+?`;
         txtEl.innerText = s.m;
+        
         if(s.s==='ch') {
             const wrap = document.createElement('div'); wrap.className = "ch-wrap flex h-full w-full items-center justify-around";
-            const ok = Math.random()>0.5;
             ["RED","BLUE"].forEach((c, i) => {
                 const b=document.createElement('button'); b.className=`w-32 h-32 bg-${c.toLowerCase()}-600 rounded-full font-black text-white text-xl`; b.innerText=c;
-                b.onclick=()=>{ (i===0 && ok) || (i===1 && !ok) ? nextStage() : endGame(false); }; wrap.append(b);
+                b.onclick=()=>{ Math.random()>0.5 ? nextStage() : endGame(false); }; wrap.append(b);
             });
             area.append(wrap);
         } else if(s.s==='sp') {
@@ -219,24 +216,23 @@
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
         stg++; if(stg >= STAGES.length) endGame(true); else loadStage();
     }
-    function shareX(sec) {
-        const text = `GIGA-HARD Challenge RTA\nClear Time: ${sec}s\n#GigaHardRTA #10万円チャレンジ\n`;
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`, '_blank');
+    function share(msg) {
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(msg)}&url=${encodeURIComponent(window.location.href)}`, '_blank');
     }
     function endGame(win) {
-        live=false;
-        const fs = (totalTime/100).toFixed(2);
+        live=false; const fs = (totalTime/100).toFixed(2);
         if(win) saveScore(document.getElementById('name').value || "PLAYER", totalTime);
-        const o=document.createElement('div'); o.className="fixed inset-0 bg-black/95 z-[60000] flex flex-col items-center justify-center p-8 text-center";
-        o.innerHTML=win?`
-            <h1 class='text-4xl text-yellow-400 font-black mb-4 uppercase'>COMPLETE!</h1>
-            <p class='text-2xl mb-4'>${fs}s</p>
-            <button onclick='shareX(${fs})' class='share-btn'>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                結果をXでシェア (Share on X)
-            </button>
-            <button onclick='location.reload()' class='mt-8 bg-white text-black px-12 py-3 rounded-full font-black uppercase'>TITLE</button>
-        `:`<h1 class='text-7xl text-red-600 font-black mb-8 italic uppercase'>TIME UP</h1><button onclick='location.reload()' class='bg-red-600 text-white px-16 py-5 rounded-full font-black uppercase'>RETRY</button>`;
+        const o=document.createElement('div'); o.className="fixed inset-0 bg-black/98 z-[60000] flex flex-col items-center justify-center p-8 text-center";
+        
+        if(win) {
+            o.innerHTML = `<h1 class='text-4xl text-yellow-400 font-black mb-4'>UNKNOWN CONQUERED</h1><p class='text-2xl'>Time: ${fs}s</p>
+                <button onclick='share("【増殖する絶望】をねじ伏せた！\\nクリアタイム: ${fs}秒\\n10万円チャレンジ、君にこの未知が超えられるか？\\n#GigaHardRTA")' class='btn-share'>結果をXでシェア</button>
+                <button onclick='location.reload()' class='mt-6 text-zinc-500 font-bold'>TITLE</button>`;
+        } else {
+            o.innerHTML = `<h1 class='text-6xl text-red-600 font-black mb-4'>LOST IN UNKNOWN</h1><p class='text-zinc-400 mb-8 uppercase text-xs'>絶望に飲まれました。現在25ステージ、さらに増殖中。</p>
+                <button onclick='share("増殖する絶望に飲まれた...。\\n現在25ステージ、さらに増殖中らしい。\\n誰かこの狂ったゲームを止めてくれ。\\n#GigaHardRTA")' class='btn-share'>絶望をXでシェア</button>
+                <button onclick='location.reload()' class='btn-retry'>RETRY CHALLENGE</button>`;
+        }
         document.body.append(o);
     }
 </script>
