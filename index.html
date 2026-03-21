@@ -7,73 +7,77 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; overflow: hidden; user-select: none; margin: 0; touch-action: manipulation; }
+        body { background: #000; color: #fff; font-family: 'Helvetica Neue', Arial, sans-serif; overflow: hidden; user-select: none; margin: 0; touch-action: manipulation; }
         .system-ticker { background: #450a0a; color: #ff0000; font-family: monospace; font-size: 10px; padding: 4px 0; border-bottom: 1px solid #ff0000; overflow: hidden; white-space: nowrap; }
-        .ticker-content { display: inline-block; animation: ticker 25s linear infinite; }
+        .ticker-content { display: inline-block; animation: ticker 20s linear infinite; }
         @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
         #game-area { height: calc(100vh - 145px); position: relative; background: #d1d5db; overflow: hidden; }
-        .danger-mode #game-area { animation: menace-pink 0.15s infinite alternate !important; }
-        @keyframes menace-pink { 0% { background: #d1d5db; } 100% { background: #ffb6c1; } }
+        .danger-mode #game-area { animation: menace-flash 0.15s infinite alternate !important; }
+        @keyframes menace-flash { 0% { background: #d1d5db; } 100% { background: #ffb6c1; } }
         
         .emoji { position: absolute; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .target { z-index: 10000; font-size: 1.5rem; } 
         .noise { z-index: 100; font-size: 1.2rem; }
 
-        /* --- 厳守ギミック CSS --- */
-        .faint-target { opacity: 0.28 !important; } /* 花・UFO。見えないバグ回避のため少し濃く */
-        .mini-target { transform: scale(0.35) !important; } /* ピエロ・虫。さらに小さく */
+        /* --- 徹底修正ギミック CSS --- */
+        .faint-target { opacity: 0.28 !important; } /* 花・UFO：見えるが薄い */
+        .mini-target { transform: scale(0.3) !important; } /* ピエロ・虫：極小 */
         
         /* ステージ5: コイン白 / 背景ノイズ黄 */
-        .white-coin { color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; filter: drop-shadow(0 0 2px #fff); } 
+        .white-coin { color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; filter: drop-shadow(0 0 1px #fff); } 
         .yellow-noise { color: #facc15 !important; -webkit-text-fill-color: #facc15 !important; } 
         
-        /* 四角: 同化 & 白発光 */
+        /* 四角: 同化 & 残り10秒で白発光 */
         .hidden-square { color: #d1d5db !important; -webkit-text-fill-color: #d1d5db !important; }
         .danger-mode .hidden-square { color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; text-shadow: 0 0 10px #fff; }
 
         .black-text { color: #000 !important; -webkit-text-fill-color: #000 !important; }
         
         #spiral-canvas { position: absolute; inset: 0; z-index: 50; pointer-events: none; display: none; }
-        .cut-point { position: absolute; width: 28px; height: 28px; z-index: 20000; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .gap-pixel { width: 3px; height: 3px; background: #d1d5db; border-radius: 50%; }
+        .cut-point { position: absolute; width: 30px; height: 30px; z-index: 20000; cursor: pointer; }
+        .gap-pixel { width: 4px; height: 4px; background: #d1d5db; border-radius: 50%; margin: auto; }
         
-        .btn-main { background: #b91c1c; padding: 20px; border-radius: 12px; font-weight: 900; width: 100%; border-bottom: 4px solid #7f1d1d; }
+        .start-btn { background: #dc2626; transition: all 0.2s; border-bottom: 5px solid #991b1b; }
+        .start-btn:active { transform: translateY(3px); border-bottom-width: 2px; }
     </style>
 </head>
 <body>
 
 <div class="system-ticker">
-    <div class="ticker-content">● WARNING: CHALLENGE MODE ACTIVE | 100,000 YEN POOL | NO URL REDIRECTS</div>
+    <div class="ticker-content">● WARNING: CHALLENGE MODE LOADED ● NO REDIRECTS ● 100,000 YEN GIVEAWAY POOL ACTIVE ● VER 2026.03</div>
 </div>
 
 <div id="start-screen" class="fixed inset-0 z-[50000] p-8 flex flex-col items-center justify-center bg-black">
-    <div class="max-w-md w-full space-y-6">
-        <div class="text-center space-y-2">
-            <h1 class="text-5xl font-black text-yellow-500 italic uppercase">10万円に挑め</h1>
-            <p class="text-red-600 font-bold tracking-widest">DEADLINE: 2027.01.01</p>
+    <div class="max-w-md w-full space-y-8">
+        <div class="text-center">
+            <h1 class="text-6xl font-black text-yellow-500 italic tracking-tighter uppercase mb-2">10万円に挑め</h1>
+            <p class="text-zinc-500 font-bold text-xs tracking-[0.3em]">GIGA-HARD RTA CHALLENGE</p>
+            <p class="text-red-600 font-black mt-4 text-xl">DEADLINE: 2027.01.01</p>
         </div>
 
-        <div class="bg-zinc-900 border border-zinc-700 p-6 rounded-2xl space-y-4 text-center">
-            <p class="text-white font-bold text-sm">【ルール/RULE】</p>
-            <p class="text-xs text-zinc-400 leading-relaxed">
-                全25ステージ+αを最速で突破せよ。<br>
-                パスワードは本人確認にのみ使用します。<br>
-                <span class="text-yellow-500 font-bold">URLリンクはすべて排除されました。</span>
-            </p>
-            <input type="text" id="name" placeholder="NICKNAME" class="w-full p-4 rounded bg-black border border-zinc-600 text-center text-white">
-            <input type="password" id="pw" maxlength="4" placeholder="4-DIGIT PASSWORD" class="w-full p-4 rounded bg-black border border-zinc-600 text-center text-white">
-            <button onclick="start()" class="btn-main text-2xl uppercase italic">RTA Start</button>
+        <div class="bg-zinc-900 p-8 rounded-3xl border border-zinc-800 shadow-2xl space-y-6">
+            <div class="space-y-4">
+                <input type="text" id="name" placeholder="NICKNAME / 名前" class="w-full p-4 rounded-xl bg-black border border-zinc-700 text-center text-white font-bold focus:border-yellow-500 outline-none">
+                <input type="password" id="pw" maxlength="4" placeholder="4-DIGIT PW / パスワード" class="w-full p-4 rounded-xl bg-black border border-zinc-700 text-center text-white font-bold focus:border-yellow-500 outline-none">
+            </div>
+            
+            <div class="text-[10px] text-zinc-500 text-center space-y-1">
+                <p>※ パスワードは本人確認にのみ使用します。</p>
+                <p>Passwords are used for identity verification only.</p>
+            </div>
+
+            <button onclick="start()" class="start-btn w-full py-5 rounded-2xl text-white text-3xl font-black italic uppercase">Start RTA</button>
         </div>
     </div>
 </div>
 
-<header class="h-[120px] bg-black flex flex-col justify-center px-6 border-b border-zinc-800">
-    <div class="flex justify-between text-[11px] font-black text-zinc-500 uppercase italic">
-        <span id="stg">STAGE 0/25</span>
-        <span id="target-text">READY...</span>
+<header class="h-[120px] bg-black flex flex-col justify-center px-6 border-b border-zinc-900">
+    <div class="flex justify-between text-[11px] font-black text-zinc-600 italic">
+        <span id="stg">STAGE 0 / 25</span>
+        <span id="target-text">AWAITING START...</span>
     </div>
-    <div id="timer" class="text-6xl font-mono font-black text-center text-white">30.00</div>
+    <div id="timer" class="text-7xl font-mono font-black text-center text-white">30.00</div>
 </header>
 
 <main id="game-area"><canvas id="spiral-canvas"></canvas></main>
@@ -84,24 +88,24 @@
         {m:"猫を探せ / Find the Cat", t:["🐱"], n:["🧔","👵","👦"], c:500},
         {m:"自転車を探せ / Find the Bike", t:["🚲"], n:["🚗","🚌","🚙"], c:500},
         {m:"クッキーを探せ / Find the Cookie", t:["🍪"], n:["🍬","🍭","🍩"], c:500},
-        {m:"銀貨5個 / Find 5 Silver Coins", t:["🥈","🥈","🥈","🥈","🥈"], n:["●"], c:550, s:"s"}, // 修正:白コイン・黄背景
-        {m:"ピエロ / Find the Clown", t:["🤡"], n:["💃","👱‍♀️"], c:500, s:"mini"}, // 修正:ピエロ極小
+        {m:"銀貨5個 / Find 5 Silver Coins", t:["🥈","🥈","🥈","🥈","🥈"], n:["●"], c:550, s:"s"}, // 白コイン/黄背景
+        {m:"ピエロを探せ / Find the Clown", t:["🤡"], n:["💃","👱‍♀️"], c:500, s:"mini"}, // ピエロ小
         {m:"国旗10個 / Find 10 Flags", t:["🇯🇵","🇺🇸","🇫🇷","🇮🇹","🇨🇳","🇷🇺","🇬🇧","🇩🇪","🇰🇷","🇪🇸"], n:["🌍","🌎"], c:600},
-        {m:"骨 / Find the Bone", t:["🦴"], n:["🐟","🐠"], c:600},
-        {m:"ピンクの花 / Find Pink Flower", t:["🌸"], n:["⭐"], c:600, s:"faint"}, // 修正:視認性確保の薄さ
+        {m:"骨を探せ / Find the Bone", t:["🦴"], n:["🐟","🐠"], c:600},
+        {m:"ピンクの花 / Find the Pink Flower", t:["🌸"], n:["⭐"], c:600, s:"faint"}, // 薄い花
         {m:"逆あを5個 / Find 5 Reversed 'あ'", t:["あ","あ","あ","あ","あ"], n:["あ"], c:450, s:"mi"},
-        {m:"鳥居 / Find the Torii Gate", t:["⛩"], n:["🏢","🏣"], c:600},
-        {m:"チェリー / Find the Cherry", t:["🍒"], n:["🍎"], c:600},
-        {m:"虫 / Find the Bug", t:["🐛"], n:["🍃","🌱"], c:600, s:"mini"},
-        {m:"カップ / Find the Trophy", t:["🏆"], n:["⚽","🏀"], c:600},
-        {m:"バナナ / Find the Banana", t:["🍌"], n:["🌙"], c:600},
-        {m:"パンダ / Find the Panda", t:["🐼"], n:["🐨","🦁","🐯"], c:600, s:"mini"},
-        {m:"タコ / Find the Octopus", t:["🐙"], n:["🦑"], c:650},
-        {m:"UFO / Find the UFO", t:["🛸"], n:["✨","🌟"], c:700, s:"faint"},
+        {m:"鳥居を探せ / Find the Torii Gate", t:["⛩"], n:["🏢","🏣"], c:600},
+        {m:"チェリーを探せ / Find the Cherry", t:["🍒"], n:["🍎"], c:600},
+        {m:"虫を探せ / Find the Bug", t:["🐛"], n:["🍃","🌱"], c:600, s:"mini"},
+        {m:"カップを探せ / Find the Trophy", t:["🏆"], n:["⚽","🏀"], c:600},
+        {m:"バナナを探せ / Find the Banana", t:["🍌"], n:["🌙"], c:600},
+        {m:"パンダを探せ / Find the Panda", t:["🐼"], n:["🐨","🦁","🐯"], c:600, s:"mini"},
+        {m:"タコを探せ / Find the Octopus", t:["🐙"], n:["🦑"], c:650},
+        {m:"UFOを探せ / Find the UFO", t:["🛸"], n:["✨","🌟"], c:700, s:"faint"},
         {m:"アイス5個 / Find 5 Ice Creams", t:["🍦","🍦","🍦","🍦","🍦"], n:["🍭"], c:600},
-        {m:"バグ / Find the Monster", t:["👾"], n:["📱","💻","💾"], c:650},
+        {m:"バグを探せ / Find the Monster", t:["👾"], n:["📱","💻","💾"], c:650},
         {m:"女性5人 / Find 5 Women", t:["💃","💃","💃","💃","💃"], n:["🧔"], c:600, s:"faint"},
-        {m:"四角5個 / Find 5 Still Squares", t:["■","■","■","■","■"], n:["■"], c:500, s:"sq"},
+        {m:"四角5個 / Find 5 Still Squares", t:["■","■","■","■","■"], n:["■"], c:500, s:"sq"}, // 同化/白浮上
         {m:"ひよこ5匹 / Find 5 Chicks", t:["🐥","🐥","🐥","🐥","🐥"], n:["🐓"], c:550},
         {m:"運命の二択 / Choice of Destiny", s:"ch"},
         {m:"螺旋の隙間8個 / Find 8 Spiral Gaps", s:"sp"}
@@ -113,7 +117,7 @@
           bodyEl=document.querySelector('body');
 
     function start() {
-        if(!document.getElementById('name').value) return alert("NICKNAME REQUIRED");
+        if(!document.getElementById('name').value || !document.getElementById('pw').value) return alert("Nickname and Password required");
         document.getElementById('start-screen').style.display='none';
         stg=0; totalTime=0; live=true; loadStage();
         if(!tid) tid=setInterval(tick, 10);
@@ -134,13 +138,13 @@
         found=0; time=3000;
         bodyEl.classList.remove('danger-mode');
         const s = STAGES[stg];
-        stgEl.innerText = `STAGE ${stg+1}/${STAGES.length}`;
+        stgEl.innerText = `STAGE ${stg+1} / ${STAGES.length}`;
         txtEl.innerText = s.m;
         
         if(s.s==='ch') {
-            const wrap = document.createElement('div'); wrap.className = "ch-wrap flex h-full w-full items-center justify-around bg-zinc-800";
+            const wrap = document.createElement('div'); wrap.className = "ch-wrap flex h-full w-full items-center justify-around bg-zinc-900";
             ["RED","BLUE"].forEach(c => {
-                const b=document.createElement('button'); b.className=`w-28 h-28 bg-${c.toLowerCase()}-700 rounded-full font-black text-white`; b.innerText=c;
+                const b=document.createElement('button'); b.className=`w-32 h-32 bg-${c.toLowerCase()}-700 rounded-full font-black text-white text-xl shadow-2xl`; b.innerText=c;
                 b.onclick=()=>{ Math.random()>0.5 ? nextStage() : endGame(false); }; wrap.append(b);
             });
             area.append(wrap);
@@ -148,10 +152,10 @@
             canvas.style.display = "block"; canvas.width = area.clientWidth; canvas.height = area.clientHeight;
             drawSpiral(70);
             for(let i=0; i<8; i++) {
-                const cut = document.createElement('div'); cut.className = "cut-point";
+                const cut = document.createElement('div'); cut.className = "cut-point flex items-center justify-center";
                 const dot = document.createElement('div'); dot.className = "gap-pixel";
                 cut.append(dot); cut.style.left = Math.random()*85+5+"%"; cut.style.top = Math.random()*85+5+"%";
-                cut.onclick = () => { dot.style.background = "#22c55e"; dot.style.transform = "scale(3)"; found++; if(found >= 8) nextStage(); };
+                cut.onclick = () => { dot.style.background = "#22c55e"; dot.style.transform = "scale(4)"; found++; if(found >= 8) nextStage(); };
                 area.append(cut);
             }
         } else {
@@ -165,7 +169,7 @@
             s.t.forEach(emoji => {
                 const g=document.createElement('div'); g.className="emoji target"; g.innerText=emoji;
                 g.style.left=Math.random()*90+5+"%"; g.style.top=Math.random()*90+5+"%";
-                if(s.s==='mini') g.classList.add('mini-target'); 
+                if(s.s==='mini' || s.s==='clown') g.classList.add('mini-target'); 
                 if(s.s==='faint') g.classList.add('faint-target');
                 if(s.s==='s') g.classList.add('white-coin'); 
                 if(s.s==='sq') g.classList.add('hidden-square');
@@ -188,12 +192,12 @@
         ctx.stroke();
     }
 
-    function nextStage() { confetti({ particleCount: 40, spread: 70, origin: { y: 0.6 } }); stg++; if(stg >= STAGES.length) endGame(true); else loadStage(); }
+    function nextStage() { confetti({ particleCount: 60, spread: 80, origin: { y: 0.6 } }); stg++; if(stg >= STAGES.length) endGame(true); else loadStage(); }
 
     function endGame(win) {
         live=false; const fs = (totalTime/100).toFixed(2);
         const o=document.createElement('div'); o.className="fixed inset-0 bg-black z-[60000] flex flex-col items-center justify-center p-8 text-center";
-        o.innerHTML = win ? `<h1 class='text-yellow-400 text-6xl font-black italic'>CLEAR</h1><p class='text-2xl mt-4'>TIME: ${fs}s</p><button onclick='location.reload()' class='btn-main mt-8'>RETRY</button>` : `<h1 class='text-red-600 text-7xl font-black uppercase'>FAILED</h1><button onclick='location.reload()' class='btn-main mt-8'>RETRY CHALLENGE</button>`;
+        o.innerHTML = win ? `<h1 class='text-yellow-400 text-7xl font-black italic'>MISSION CLEAR</h1><p class='text-3xl mt-6'>TOTAL TIME: ${fs}s</p><button onclick='location.reload()' class='start-btn mt-12 px-12 py-4 rounded-xl text-2xl font-black uppercase'>Title Screen</button>` : `<h1 class='text-red-600 text-8xl font-black uppercase'>MISSION FAILED</h1><button onclick='location.reload()' class='start-btn mt-12 px-12 py-4 rounded-xl text-2xl font-black uppercase'>Try Again</button>`;
         document.body.append(o);
     }
 </script>
